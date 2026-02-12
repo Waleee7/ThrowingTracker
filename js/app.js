@@ -4,7 +4,7 @@
 
 var ThrowingTracker = {
   state: {
-    activeTab: 'dashboard',
+    activeTab: 'dashboard', 
     profile: {
       name: '',
       height: { value: '', unit: 'cm', feet: '', inches: '' },

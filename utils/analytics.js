@@ -9,7 +9,7 @@ var calculateStreak = function(sessions) {
     return new Date(b.date) - new Date(a.date);
   });
 
-  var today = new Date();
+  var today = new Date(); 
   today.setHours(0, 0, 0, 0);
 
   var streak = 0;

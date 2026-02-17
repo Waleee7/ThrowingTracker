@@ -8,7 +8,7 @@ A clean, lightweight training log built for competitive track & field throwers. 
 
 ## 🌐 Live Demo
 
-**[throwingtracker-waleee7s-projects.vercel.app](https://throwingtracker-waleee7s-projects.vercel.app)**
+**[ThrowingTracker](https://waleee7.github.io/ThrowingTracker/)**
 
 ---
 

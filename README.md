@@ -1,226 +1,144 @@
-# 🏋️ ThrowingTracker
+# ThrowingTracker v2.0
 
-A clean, lightweight training log built for competitive track & field throwers. Log sessions, track RPE, monitor streaks, and review performance summaries — all from your browser with zero setup.
+A professional training log and analytics platform for competitive track & field throwers. Track sessions, visualize progress with charts, earn achievement badges, run competitions in Meet Day Mode, and analyze throw landing zones — all from your browser.
 
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-
-## 🌐 Live Demo
-
-**[ThrowingTracker](https://waleee7.github.io/ThrowingTracker/)**
+![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---------|-------------|
-| 📊 **Dashboard** | At-a-glance view of streaks, weekly throws, and average RPE |
-| 📝 **Session Logging** | Log training or competition sessions with full details |
-| 👤 **Athlete Profile** | Store name, height, weight, sex, and preferred events |
-| 📈 **History & Stats** | View recent sessions, weekly summaries, and monthly breakdowns |
-| 🔥 **Streak Tracking** | Consecutive training day counter to keep you accountable |
-| 🎯 **5 Throwing Events** | Shot Put, Discus, Hammer, Weight Throw, and Javelin |
-| 📎 **Media Upload** | Attach photos and videos to your training sessions |
-| 🏆 **Competition Mode** | Log meet name, placement, and mark competition sessions with ⭐ |
-| 💾 **Local Storage** | All data saved in your browser — no account needed |
-| 📱 **Mobile Friendly** | Responsive design that works on any device |
-| 🚀 **Zero Dependencies** | No frameworks, no build tools — just open and use |
+| **Dashboard** | Stats grid, personal best cards, streak counter, compact achievement badges |
+| **Session Logging** | Training & competition sessions with RPE, throws, marks, media |
+| **Meet Day Mode** | Full competition interface — 6 attempts, mark/foul buttons, live best tracking |
+| **Progress Charts** | Line charts for marks over time, bar charts for weekly volume, RPE trends |
+| **Landing Zone Tracker** | Canvas-based sector diagram to plot where throws land with scatter analysis |
+| **Achievement Badges** | 16 badges across 5 categories (milestone, streak, competition, volume, special) |
+| **Video Analysis** | Slow-mo playback (0.25x-1x), frame stepping, drawing annotations |
+| **Personal Bests** | Auto-calculated all-time and season PBs with animated PR celebration alerts |
+| **Data Export/Import** | JSON & CSV export, JSON import with merge/replace modes |
+| **Dark Mode** | Full dark theme toggle |
+| **PWA Ready** | Installable on phone, manifest + SVG icons |
+| **Onboarding** | 3-step first-time user flow (name, events, start) |
+| **5 Events** | Shot Put, Discus, Hammer, Weight Throw, Javelin |
 
 ---
 
-## 🏁 Quick Start
+## Quick Start
 
-No terminal. No installs. No build step.
-
-\```bash
+```bash
 # Clone the repo
-git clone https://github.com/waleee7/ThrowingTracker.git
+git clone https://github.com/Waleee7/ThrowingTracker.git
+cd ThrowingTracker
 
-# Open the app
-# Just double-click index.html in your browser
-\```
+# Install dependencies
+npm install
 
-That's it. It works offline too.
+# Run dev server
+npm run dev
+```
 
----
-
-## 🎯 Supported Events
-
-| Event | Icon |
-|-------|------|
-| Shot Put | 🏋️ |
-| Discus | 🥏 |
-| Hammer | 🔨 |
-| Weight Throw | ⚖️ |
-| Javelin | 🎯 |
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 📋 Session Logging
+## Tech Stack
 
-Each session captures:
-
-| Field | Description |
-|-------|-------------|
-| **Date** | When the session took place |
-| **Event** | Which throwing event |
-| **Session Type** | Training or Competition |
-| **RPE (1-10)** | Rate of perceived exertion |
-| **Throws** | Total number of throws |
-| **Implement Weight** | Weight in kg or lbs |
-| **Best Mark** | Longest throw in meters |
-| **Average Mark** | Average throw in meters |
-| **Notes** | Technical cues, how it felt, etc. |
-| **Media** | Photos or videos from the session |
-| **Meet Name** | Competition name (competition mode) |
-| **Placement** | Finishing position (competition mode) |
+| Layer | Tool | Why |
+|-------|------|-----|
+| Framework | Next.js 15 (App Router) | React ecosystem, static export, Vercel deploy |
+| Language | TypeScript (strict) | Type safety for all data |
+| UI | React 19 | Component architecture |
+| Styling | Tailwind CSS v4 + custom CSS | Fast iteration, complete design control |
+| Charts | Recharts | React-native, lightweight |
+| Canvas | HTML5 Canvas API | Sector map, video annotation |
+| Video | HTML5 Video API | Slow-mo, frame stepping |
+| Storage | localStorage + IndexedDB | Sessions in localStorage, media in IndexedDB |
+| Deploy | Vercel (static export) | Zero config |
 
 ---
 
-## 📊 Stats & Analytics
+## Project Structure
 
-ThrowingTracker calculates and displays:
-
-- **Day Streak** — consecutive days with a logged session
-- **Weekly Summary** — session count, total throws, average RPE, breakdown by event
-- **Monthly Summary** — same metrics over a 30-day window
-- **Per-Event Breakdown** — best mark, average mark, and session count for each event
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **Structure** | HTML5 |
-| **Styling** | CSS3 with custom properties |
-| **Logic** | Vanilla JavaScript (ES5+) |
-| **Animations** | CSS keyframe animations |
-| **State** | In-memory JS objects |
-| **Persistence** | Browser LocalStorage |
-| **Icons** | Inline SVG graphics |
-| **Build Tools** | None — zero build step |
-
-No frameworks. No transpilers. No package managers. Pure web fundamentals.
-
----
-
-## 🗂️ Project Structure
-
-\```
-ThrowingTracker/
-├── index.html                        # Entry point that loads all scripts
-├── css/
-│   └── styles.css                    # All app styles, layout, and animations
-├── js/
-│   ├── main.js                       # Initializes the app on page load
-│   ├── app.js                        # Core state management and tab routing
-│   └── components/
-│       ├── DashboardTab.js           # Renders dashboard stats and last session
-│       ├── FloatingElements.js       # Animated background orbs for visual flair
-│       ├── HistoryTab.js             # Displays session history and stat summaries
-│       ├── LogTab.js                 # Session logging form with validation
-│       ├── ProfileTab.js             # Athlete profile form and event selection
-│       └── TabButton.js              # Reusable tab navigation button component
-└── utils/
-    ├── analytics.js                  # Calculates streaks, weekly, and monthly stats
-    ├── constants.js                  # Event definitions, RPE scale, and units
-    └── storage.js                    # LocalStorage read and write wrapper
-\```
+```
+src/
+├── app/
+│   ├── layout.tsx           # Root layout, PWA meta
+│   ├── page.tsx             # Main app — tab routing, state, integrations
+│   └── globals.css          # All styles (~2000 lines)
+├── components/
+│   ├── DashboardTab.tsx     # Stats, PBs, last session, badges
+│   ├── ProfileTab.tsx       # Profile form + data export/import
+│   ├── LogTab.tsx           # Session logging form
+│   ├── HistoryTab.tsx       # Recent/weekly/monthly views
+│   ├── ProgressChart.tsx    # Recharts line/bar/composed charts
+│   ├── SectorMap.tsx        # Canvas throwing sector diagram
+│   ├── ThrowScatter.tsx     # Multi-session scatter analysis
+│   ├── VideoPlayer.tsx      # Slow-mo player + annotation overlay
+│   ├── MeetDayMode.tsx      # Competition attempt tracker
+│   ├── AchievementBadges.tsx # Full + compact badge views
+│   ├── AchievementToast.tsx # Badge unlock notification
+│   ├── Onboarding.tsx       # First-time user flow
+│   ├── PRAlert.tsx          # PR celebration overlay
+│   ├── Icons.tsx            # Custom SVG icon components
+│   ├── TabButton.tsx        # Tab navigation button
+│   └── FloatingElements.tsx # Background orbs
+├── lib/
+│   ├── types.ts             # All TypeScript interfaces
+│   ├── constants.ts         # Events, RPE scale, colors
+│   ├── storage.ts           # localStorage typed wrapper
+│   ├── analytics.ts         # Streak & stats calculations
+│   ├── personal-bests.ts    # PB detection & season tracking
+│   ├── achievements.ts      # 16 badge definitions & checks
+│   ├── export.ts            # JSON/CSV export & import
+│   └── media-storage.ts     # IndexedDB for videos/images
+└── hooks/
+    ├── useProfile.ts        # Profile state + persistence
+    └── useSessions.ts       # Session CRUD + persistence
+```
 
 ---
 
-## 💾 Data Storage
+## Deployment
 
-All data lives in your browser's LocalStorage under two keys:
+### Vercel (Recommended)
 
-| Key | Contents |
-|-----|----------|
-| `throwingProfile` | Athlete profile — name, height, weight, sex, events, notes |
-| `throwingSessions` | Array of all logged training and competition sessions |
-
-- Data persists across browser sessions automatically
-- No account creation or login required
-- Clearing browser data resets the app to a fresh state
-- No data is ever sent to any server
-
----
-
-## 🎨 Design Philosophy
-
-ThrowingTracker was built with one principle: **get out of the athlete's way**.
-
-- **No Signup Walls** — open the app and start logging immediately
-- **Offline First** — everything runs client-side, no internet required after first load
-- **Minimal Taps** — the log form is designed to be completed in under 30 seconds
-- **Glanceable Dashboard** — streak, weekly count, throws, and RPE visible instantly
-- **Progressive Detail** — simple on the surface, detailed breakdowns when you dig in
-
-The UI uses a purple gradient theme with glassmorphism-inspired panels, floating background orbs, and smooth CSS transitions — keeping the experience polished without any heavy animation libraries.
-
----
-
-## 🧩 Challenges & Solutions
-
-Building a full-featured app with zero dependencies presented some interesting problems:
-
-**Component Architecture Without a Framework**
-
-- **Problem:** Organizing UI code without React, Vue, or any component library
-- **Solution:** Built a lightweight component pattern where each tab is a JS object with `render()` and `attachEvents()` methods, mimicking component lifecycles with plain DOM manipulation
-
-**State Management Without Redux or Context**
-
-- **Problem:** Keeping dashboard, history, and profile in sync without reactive state
-- **Solution:** Centralized all state in a single `ThrowingTracker.state` object with explicit re-renders on tab switches, keeping data flow predictable and debuggable
-
-**Form Validation Without Libraries**
-
-- **Problem:** The log form has interdependent fields (average can't exceed best mark) and required field checks
-- **Solution:** Custom validation with inline error display, field-level error clearing on input change, and a clean error/success flow
-
-**Streak Calculation Accuracy**
-
-- **Problem:** Counting consecutive training days while handling edge cases like logging late at night or skipping today
-- **Solution:** Date normalization with a one-day grace period — if you haven't logged today yet, the streak checks from yesterday backward
-
----
+Connect this repo to Vercel — it auto-detects Next.js and deploys.
 
 ### Any Static Host
 
-This is a pure static site. Deploy anywhere that serves HTML:
-
-| Platform | Method |
-|----------|--------|
-| **Netlify** | Drag and drop the project folder |
-| **Cloudflare Pages** | Connect your GitHub repo |
-| **Render** | Static site from repo |
-| **Self-hosted** | Serve files from any web server |
-
-No build commands. No environment variables. No server-side runtime needed.
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Here are some ideas:
-
-- 📊 Add charts and data visualizations
-- 📤 Build data export/import (CSV or JSON)
-- 🏅 Add personal records tracking per event
-- 🔔 Add training reminders or notifications
-- 🎨 Add theme customization options
-- 🐛 Fix bugs or improve accessibility
-
----
-
-## 📄 License
-
-MIT License — free to use for personal or commercial projects.
-
----
-
-**Built for throwers, by a thrower. Log your work. Track your progress. Throw far. 🏋️**
+```bash
+npm run build   # Outputs to /out directory
 ```
+
+Deploy the `/out` folder to Netlify, GitHub Pages, Cloudflare Pages, etc.
+
+---
+
+## Data Storage
+
+All data lives in the browser — no server, no account needed:
+
+| Store | Contents |
+|-------|----------|
+| `throwingProfile` (localStorage) | Name, height, weight, events, notes |
+| `throwingSessions` (localStorage) | All training & competition sessions |
+| `throwingDarkMode` (localStorage) | Dark mode preference |
+| IndexedDB `media-store` | Videos and large image files |
+
+Export your data regularly from Profile > Data Management.
+
+---
+
+## License
+
+MIT License — free to use, modify, and distribute.
+
+---
+
+**Built for throwers. Log your work. Track your progress. Throw far.**

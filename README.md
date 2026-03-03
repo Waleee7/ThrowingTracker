@@ -1,144 +1,211 @@
-# ThrowingTracker v2.0
+<div align="center">
+  <img src="assets/header.svg" width="800" alt="ThrowingTracker v2.0"/>
+</div>
 
-A professional training log and analytics platform for competitive track & field throwers. Track sessions, visualize progress with charts, earn achievement badges, run competitions in Meet Day Mode, and analyze throw landing zones — all from your browser.
+<br/>
 
-![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+<div align="center">
+
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=18&duration=2800&pause=900&color=7C3AED&center=true&vCenter=true&width=560&lines=Track+every+session.+Analyze+every+throw.;54.9m.+Season+PR.+Meet+Day+Mode.;Know+your+numbers+before+competition+day.;Built+for+Shot+Put%2C+Discus%2C+Hammer%2C+Javelin.)](https://git.io/typing-svg)
+
+</div>
+
+<br/>
+
+<div align="center">
+
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?style=flat-square&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=flat-square&logo=tailwindcss)
+![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=flat-square)
+![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+
+</div>
 
 ---
 
-## Features
+## Why This Exists
 
-| Feature | Description |
-|---------|-------------|
-| **Dashboard** | Stats grid, personal best cards, streak counter, compact achievement badges |
-| **Session Logging** | Training & competition sessions with RPE, throws, marks, media |
-| **Meet Day Mode** | Full competition interface — 6 attempts, mark/foul buttons, live best tracking |
-| **Progress Charts** | Line charts for marks over time, bar charts for weekly volume, RPE trends |
-| **Landing Zone Tracker** | Canvas-based sector diagram to plot where throws land with scatter analysis |
-| **Achievement Badges** | 16 badges across 5 categories (milestone, streak, competition, volume, special) |
-| **Video Analysis** | Slow-mo playback (0.25x-1x), frame stepping, drawing annotations |
-| **Personal Bests** | Auto-calculated all-time and season PBs with animated PR celebration alerts |
-| **Data Export/Import** | JSON & CSV export, JSON import with merge/replace modes |
-| **Dark Mode** | Full dark theme toggle |
-| **PWA Ready** | Installable on phone, manifest + SVG icons |
-| **Onboarding** | 3-step first-time user flow (name, events, start) |
-| **5 Events** | Shot Put, Discus, Hammer, Weight Throw, Javelin |
+Most throwing athletes log sessions in a notes app, a spiral notebook, or not at all.
+When competition season starts, they're guessing — guessing which implement felt best in
+February, guessing what RPE correlated with their peak marks, guessing why their discus
+keeps drifting left.
+
+ThrowingTracker was built to eliminate the guessing. Purpose-built for Shot Put, Discus,
+Hammer, Weight Throw, and Javelin athletes — not a generic fitness tracker with throwing
+bolted on.
+
+Log a session after practice. See your trend line move. Know exactly where you stand
+going into Saturday's meet.
+
+---
+
+## See It In Action
+You switch to Meet Day Mode before warm-ups.
+
+├─ Attempt 1: 51.8m ✓
+├─ Attempt 2: FOUL ✗
+├─ Attempt 3: 53.1m ✓ ← Live best updates automatically
+├─ Attempt 4: 52.7m ✓
+├─ Attempt 5: 54.9m ✓ ← New season PR — celebration fires
+└─ Attempt 6: FOUL ✗
+
+Session saved. Dashboard updates. PR recorded.
+
+text
+
+
+---
+
+## What Problems This Solves
+
+| The Problem | What Throwers Do Now | What ThrowingTracker Does |
+|---|---|---|
+| No throw history | Notes app, memory, paper | Structured session log — marks, RPE, media |
+| Can't see progress | "I think I've been improving?" | Line charts with mark progression over any time window |
+| Don't know landing patterns | Coach watches, guesses | Canvas sector map — plot every throw, see the cluster |
+| Competition tracking is chaos | Paper scorecard, mental math | Meet Day Mode — 6 attempts, live best, foul tracking |
+| No consistency motivation | Streaks break silently | 16 badges, animated PR alerts, streak counter |
+| Video buried in camera roll | Scrub manually, lose context | Slow-mo player with frame stepping and annotations |
+| Data locked in the app | Start over on new device | JSON and CSV export with merge or replace import |
+
+---
+
+## Core Features
+
+**🎯 Session Logging** — Event, session type, individual throw marks, RPE (1–10),
+and media. Everything stored locally, no account needed.
+
+**📊 Progress Charts** — Marks over time, weekly throw volume, and RPE trends.
+Built with Recharts. See plateaus and breakthroughs clearly.
+
+**🗺️ Landing Zone Tracker** — Canvas-rendered 34.92° regulation sector diagram.
+Plot every throw, overlay multiple sessions, see where your marks actually cluster.
+If your discus drifts right consistently, you'll see it in three sessions.
+
+**🏆 Meet Day Mode** — 6 attempt slots, mark or foul buttons, live competition
+best tracking, and automatic PR detection. When the meet ends, the session saves.
+
+**🎬 Video Analysis** — Slow-mo playback (0.25x–1x), frame-by-frame stepping,
+and drawing annotations directly on frame. Stored in IndexedDB — no upload, no fee.
+
+**📤 Data Export** — JSON and CSV export. JSON import with merge or replace modes.
+Your data belongs to you.
+
+---
+
+## Achievement Badges
+
+<div align="center">
+  <img src="assets/badges/iron-streak.svg" width="72" alt="Iron Streak"/>
+  &nbsp;&nbsp;
+  <img src="assets/badges/first-pr.svg" width="72" alt="First PR"/>
+  &nbsp;&nbsp;
+  <img src="assets/badges/century-throws.svg" width="72" alt="Century Throws"/>
+  &nbsp;&nbsp;
+  <img src="assets/badges/meet-day-hero.svg" width="72" alt="Meet Day Hero"/>
+</div>
+
+<br/>
+
+16 badges across 5 categories — Milestone, Streak, Competition, Volume, and Special.
+All built around throwing-specific goals, not generic fitness checkboxes.
+Toast notifications fire on unlock. PR celebration overlay triggers mid-session.
 
 ---
 
 ## Quick Start
 
 ```bash
-# Clone the repo
 git clone https://github.com/Waleee7/ThrowingTracker.git
 cd ThrowingTracker
-
-# Install dependencies
 npm install
-
-# Run dev server
 npm run dev
-```
+Open http://localhost:3000 — onboarding walks you through
+setup in 3 steps. No account. No API key. No configuration.
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Tech Stack
+Layer	Tool	Why
+Framework	Next.js 15 (App Router)	Static export — deploy anywhere for free
+Language	TypeScript (strict)	Every session and badge fully typed
+Styling	Tailwind CSS v4 + custom CSS	Utility-first, custom for canvas and animations
+Charts	Recharts	React-native, no D3 configuration needed
+Sector Map	HTML5 Canvas API	Sector geometry requires direct canvas control
+Video	HTML5 Video API	Frame-accurate seeking for slow-mo and annotations
+Storage	localStorage + IndexedDB	Sessions in localStorage, media in IndexedDB
+Deployment	Vercel	npm run build → /out → deploy anywhere
+Architecture
+text
 
----
-
-## Tech Stack
-
-| Layer | Tool | Why |
-|-------|------|-----|
-| Framework | Next.js 15 (App Router) | React ecosystem, static export, Vercel deploy |
-| Language | TypeScript (strict) | Type safety for all data |
-| UI | React 19 | Component architecture |
-| Styling | Tailwind CSS v4 + custom CSS | Fast iteration, complete design control |
-| Charts | Recharts | React-native, lightweight |
-| Canvas | HTML5 Canvas API | Sector map, video annotation |
-| Video | HTML5 Video API | Slow-mo, frame stepping |
-| Storage | localStorage + IndexedDB | Sessions in localStorage, media in IndexedDB |
-| Deploy | Vercel (static export) | Zero config |
-
----
-
-## Project Structure
-
-```
 src/
 ├── app/
-│   ├── layout.tsx           # Root layout, PWA meta
-│   ├── page.tsx             # Main app — tab routing, state, integrations
-│   └── globals.css          # All styles (~2000 lines)
+│   ├── layout.tsx              # Root layout — PWA meta, dark mode
+│   ├── page.tsx                # App shell — tab routing, global state
+│   └── globals.css             # Design system (~2000 lines)
 ├── components/
-│   ├── DashboardTab.tsx     # Stats, PBs, last session, badges
-│   ├── ProfileTab.tsx       # Profile form + data export/import
-│   ├── LogTab.tsx           # Session logging form
-│   ├── HistoryTab.tsx       # Recent/weekly/monthly views
-│   ├── ProgressChart.tsx    # Recharts line/bar/composed charts
-│   ├── SectorMap.tsx        # Canvas throwing sector diagram
-│   ├── ThrowScatter.tsx     # Multi-session scatter analysis
-│   ├── VideoPlayer.tsx      # Slow-mo player + annotation overlay
-│   ├── MeetDayMode.tsx      # Competition attempt tracker
-│   ├── AchievementBadges.tsx # Full + compact badge views
-│   ├── AchievementToast.tsx # Badge unlock notification
-│   ├── Onboarding.tsx       # First-time user flow
-│   ├── PRAlert.tsx          # PR celebration overlay
-│   ├── Icons.tsx            # Custom SVG icon components
-│   ├── TabButton.tsx        # Tab navigation button
-│   └── FloatingElements.tsx # Background orbs
+│   ├── DashboardTab.tsx        # Stats grid, PB cards, streak, badges
+│   ├── LogTab.tsx              # Session form — event, throws, RPE, media
+│   ├── HistoryTab.tsx          # Session list — recent / weekly / monthly
+│   ├── ProgressChart.tsx       # Marks, volume, RPE charts
+│   ├── SectorMap.tsx           # Canvas sector diagram + scatter plotting
+│   ├── ThrowScatter.tsx        # Multi-session scatter overlay
+│   ├── VideoPlayer.tsx         # Slow-mo, frame step, annotation layer
+│   ├── MeetDayMode.tsx         # 6 attempts, foul/mark, live best
+│   ├── AchievementBadges.tsx   # Badge gallery + dashboard chips
+│   ├── AchievementToast.tsx    # Badge unlock notification
+│   └── PRAlert.tsx             # PR celebration overlay
 ├── lib/
-│   ├── types.ts             # All TypeScript interfaces
-│   ├── constants.ts         # Events, RPE scale, colors
-│   ├── storage.ts           # localStorage typed wrapper
-│   ├── analytics.ts         # Streak & stats calculations
-│   ├── personal-bests.ts    # PB detection & season tracking
-│   ├── achievements.ts      # 16 badge definitions & checks
-│   ├── export.ts            # JSON/CSV export & import
-│   └── media-storage.ts     # IndexedDB for videos/images
+│   ├── types.ts                # Session, Throw, Badge, Profile interfaces
+│   ├── analytics.ts            # Streak, volume, RPE calculations
+│   ├── personal-bests.ts       # All-time and season PB detection
+│   ├── achievements.ts         # 16 badge definitions and unlock checks
+│   └── export.ts               # JSON/CSV export, import with merge/replace
 └── hooks/
-    ├── useProfile.ts        # Profile state + persistence
-    └── useSessions.ts       # Session CRUD + persistence
-```
+    ├── useProfile.ts           # Profile state and persistence
+    └── useSessions.ts          # Session CRUD + localStorage sync
+Deployment
+Vercel — connect the repo, it auto-detects Next.js and deploys on every push.
 
----
+Any static host — npm run build outputs to /out.
+Drop it on Netlify, GitHub Pages, or Cloudflare Pages.
 
-## Deployment
+PWA — installs like a native app on iOS and Android. Works fully offline once cached.
 
-### Vercel (Recommended)
+Data Storage
+No server. No account. Nothing leaves your device.
 
-Connect this repo to Vercel — it auto-detects Next.js and deploys.
+Store	Contents
+localStorage	Sessions, profile, preferences
+IndexedDB	Videos and image files
+Back up regularly — Profile → Data Management → Export JSON
 
-### Any Static Host
+Roadmap
+ Session logging — marks, RPE, media
+ Progress charts — marks, volume, RPE
+ Canvas sector map with scatter analysis
+ Meet Day Mode — 6 attempts, live best, fouls
+ 16 achievement badges with toast notifications
+ Video slow-mo player with annotations
+ Personal best detection — all-time and season
+ JSON and CSV export with import modes
+ Dark mode + PWA install
+ Coach share — session report as PDF or shareable link
+ Wind reading field for legal/illegal mark tracking
+ Head-to-head competition history
+ Training block planner with auto periodization
+Contributing
+Athlete feedback drives the roadmap. If you throw and have a feature request,
+open an issue and describe the problem.
 
-```bash
-npm run build   # Outputs to /out directory
-```
+Bash
 
-Deploy the `/out` folder to Netlify, GitHub Pages, Cloudflare Pages, etc.
+git checkout -b feature/your-feature-name
+# make changes
+git commit -m "feat: describe what you added"
+git push origin feature/your-feature-name
+# open a pull request
+License
+MIT — free to use, modify, and distribute.
 
----
-
-## Data Storage
-
-All data lives in the browser — no server, no account needed:
-
-| Store | Contents |
-|-------|----------|
-| `throwingProfile` (localStorage) | Name, height, weight, events, notes |
-| `throwingSessions` (localStorage) | All training & competition sessions |
-| `throwingDarkMode` (localStorage) | Dark mode preference |
-| IndexedDB `media-store` | Videos and large image files |
-
-Export your data regularly from Profile > Data Management.
-
----
-
-## License
-
-MIT License — free to use, modify, and distribute.
-
----
-
-**Built for throwers. Log your work. Track your progress. Throw far.**
+<div align="center"> <img src="https://capsule-render.vercel.app/api?type=waving&color=4F46E5,7C3AED,DB2777&height=80&section=footer" width="100%"/> </div><div align="center"> <sub>Built for throwers. By someone who knows what it's like to have no idea where that last throw went.</sub> </div> ```

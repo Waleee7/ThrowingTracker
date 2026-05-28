@@ -1,4 +1,5 @@
 import { Session, WeeklyMonthlyStats, EventStats } from './types';
+import { toLocalDateKey } from './dates';
 
 export function calculateStreak(sessions: Session[]): number {
   if (!sessions || sessions.length === 0) return 0;
@@ -14,7 +15,7 @@ export function calculateStreak(sessions: Session[]): number {
   const checkDate = new Date(today);
 
   for (let i = 0; i < 365; i++) {
-    const dateStr = checkDate.toISOString().split('T')[0];
+    const dateStr = toLocalDateKey(checkDate);
     const hasSession = sortedSessions.some((s) => s.date === dateStr);
 
     if (hasSession) {
@@ -44,11 +45,13 @@ function getStatsForPeriod(sessions: Session[], cutoffDate: Date): WeeklyMonthly
         ? (filtered.reduce((sum, s) => sum + s.rpe, 0) / filtered.length).toFixed(1)
         : 0,
     byEvent: filtered.reduce<Record<string, EventStats>>((acc, s) => {
-      if (!acc[s.event]) acc[s.event] = { count: 0, bestMark: 0, avgMark: 0, totalMark: 0 };
-      acc[s.event].count++;
-      acc[s.event].bestMark = Math.max(acc[s.event].bestMark, s.bestMark);
-      acc[s.event].totalMark += s.avgMark;
-      acc[s.event].avgMark = acc[s.event].totalMark / acc[s.event].count;
+      if (!acc[s.event]) acc[s.event] = { count: 0, bestMark: 0, avgMark: 0, totalMark: 0, totalThrows: 0 };
+      const e = acc[s.event];
+      e.count++;
+      e.bestMark = Math.max(e.bestMark, s.bestMark);
+      e.totalMark += s.avgMark * s.throws;
+      e.totalThrows += s.throws;
+      e.avgMark = e.totalThrows > 0 ? e.totalMark / e.totalThrows : 0;
       return acc;
     }, {}),
   };

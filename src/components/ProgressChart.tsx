@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { Session } from '@/lib/types';
 import { EVENTS, EVENT_COLORS } from '@/lib/constants';
+import { weekStartKey, fromDateKey } from '@/lib/dates';
 
 interface ProgressChartProps {
   sessions: Session[];
@@ -158,7 +159,7 @@ function VolumeBar({ sessions, events }: { sessions: Session[]; events: typeof E
   const data = useMemo(() => {
     const weekMap: Record<string, Record<string, number>> = {};
     for (const s of sessions) {
-      const weekStart = getWeekStart(new Date(s.date));
+      const weekStart = getWeekStart(s.date);
       if (!weekMap[weekStart]) weekMap[weekStart] = {};
       weekMap[weekStart][s.event] = (weekMap[weekStart][s.event] || 0) + s.throws;
     }
@@ -220,12 +221,10 @@ function RPETrend({ sessions, events }: { sessions: Session[]; events: typeof EV
 }
 
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr);
+  const d = fromDateKey(dateStr);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function getWeekStart(date: Date): string {
-  const d = new Date(date);
-  d.setDate(d.getDate() - d.getDay());
-  return d.toISOString().split('T')[0];
+function getWeekStart(dateStr: string): string {
+  return weekStartKey(dateStr);
 }

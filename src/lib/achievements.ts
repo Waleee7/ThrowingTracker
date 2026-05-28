@@ -1,5 +1,6 @@
 import { Session } from './types';
 import { calculateStreak } from './analytics';
+import { weekStartKey } from './dates';
 
 export interface Achievement {
   id: string;
@@ -152,10 +153,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     check: (sessions) => {
       const weekMap: Record<string, number> = {};
       for (const s of sessions) {
-        const d = new Date(s.date);
-        const weekStart = new Date(d);
-        weekStart.setDate(d.getDate() - d.getDay());
-        const key = weekStart.toISOString().split('T')[0];
+        const key = weekStartKey(s.date);
         weekMap[key] = (weekMap[key] || 0) + s.throws;
       }
       const maxWeek = Math.max(0, ...Object.values(weekMap));

@@ -2025,6 +2025,160 @@ body {
   color: #667eea;
 }
 
+/* --- Tiered onboarding (identity, body, PRs, level reveal) --- */
+.onboarding-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.onboarding-pill {
+  padding: 10px 14px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.onboarding-row .onboarding-pill {
+  flex: 1;
+}
+
+.onboarding-pill:active {
+  transform: scale(0.96);
+}
+
+.onboarding-pill.selected {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.15);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  color: #4a3f8a;
+}
+
+.onboarding-grade-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.onboarding-pr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.onboarding-pr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-align: left;
+}
+
+.onboarding-pr-row .onboarding-input {
+  flex: 1;
+  text-align: left;
+}
+
+.onboarding-event-implement {
+  font-size: 11px;
+  font-weight: 700;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.12);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.onboarding-level-badge {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.level-badge {
+  display: inline-block;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.level-badge.level-rookie {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.level-badge.level-competitor {
+  background: linear-gradient(135deg, #667eea 0%, #4facfe 100%);
+}
+
+.level-badge.level-elite {
+  background: linear-gradient(135deg, #764ba2 0%, #f5af19 100%);
+}
+
+.onboarding-reasons {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onboarding-reasons li {
+  font-size: 13px;
+  color: #444;
+  background: rgba(102, 126, 234, 0.08);
+  border-left: 3px solid #667eea;
+  border-radius: 8px;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.dark .onboarding-pill,
+.dark-mode .onboarding-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #e5e5e5;
+}
+
+.dark .onboarding-pill.selected,
+.dark-mode .onboarding-pill.selected {
+  background: rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
+  color: #fff;
+}
+
+.dark .onboarding-pr-row,
+.dark-mode .onboarding-pr-row {
+  color: #ddd;
+}
+
+.dark .onboarding-reasons li,
+.dark-mode .onboarding-reasons li {
+  background: rgba(102, 126, 234, 0.15);
+  color: #ddd;
+}
+
+.dark .onboarding-event-implement,
+.dark-mode .onboarding-event-implement {
+  background: rgba(102, 126, 234, 0.25);
+  color: #b9c4ff;
+}
+
 /* ============================================================================
    MEET DAY MODE
    ============================================================================ */

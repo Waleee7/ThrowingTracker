@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Session } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
+import { toLocalDateKey } from '@/lib/dates';
 
 interface MeetDayModeProps {
   onSave: (session: Session) => void;
@@ -71,7 +72,7 @@ export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
   const handleFinish = () => {
     const session: Session = {
       id: Date.now().toString(),
-      date: new Date().toISOString().split('T')[0],
+      date: toLocalDateKey(),
       event,
       sessionType: 'competition',
       rpe,

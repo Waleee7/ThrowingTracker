@@ -29,6 +29,13 @@ export function exportToJSON(): void {
   storage.setLastExport(new Date().toISOString());
 }
 
+function csvCell(value: string | number): string {
+  const s = String(value ?? '');
+  // OWASP: neutralize CSV formula injection in spreadsheet apps
+  const guarded = typeof value === 'string' && /^[=+\-@]/.test(s) ? `'${s}` : s;
+  return /[",\n]/.test(guarded) ? `"${guarded.replace(/"/g, '""')}"` : guarded;
+}
+
 export function exportToCSV(): void {
   const sessions = storage.getSessions();
   if (sessions.length === 0) return;
@@ -39,22 +46,25 @@ export function exportToCSV(): void {
     'Avg Mark (m)', 'Meet Name', 'Placement', 'Notes',
   ];
 
-  const rows = sessions.map((s) => [
+  const rows: (string | number)[][] = sessions.map((s) => [
     s.date,
     s.event,
     s.sessionType,
-    s.rpe.toString(),
-    s.throws.toString(),
-    s.implementWeight.toString(),
+    s.rpe,
+    s.throws,
+    s.implementWeight,
     s.weightUnit,
-    s.bestMark.toString(),
-    s.avgMark.toString(),
+    s.bestMark,
+    s.avgMark,
     s.meetName || '',
     s.placement || '',
-    `"${(s.notes || '').replace(/"/g, '""')}"`,
+    s.notes || '',
   ]);
 
-  const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+  const csv = [
+    headers.map(csvCell).join(','),
+    ...rows.map((r) => r.map(csvCell).join(',')),
+  ].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const date = new Date().toISOString().split('T')[0];

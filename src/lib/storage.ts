@@ -4,6 +4,8 @@ const PROFILE_KEY = 'throwingProfile';
 const SESSIONS_KEY = 'throwingSessions';
 const LAST_EXPORT_KEY = 'throwingLastExport';
 const DARK_MODE_KEY = 'throwingDarkMode';
+const SCHEMA_VERSION_KEY = 'throwingSchemaVersion';
+const SCHEMA_VERSION = 1;
 
 function get<T>(key: string): T | null {
   if (typeof window === 'undefined') return null;
@@ -40,6 +42,16 @@ export const storage = {
   getDarkMode: (): boolean => get<boolean>(DARK_MODE_KEY) ?? false,
   setDarkMode: (enabled: boolean) => set(DARK_MODE_KEY, enabled),
 
+  getSchemaVersion: (): number => get<number>(SCHEMA_VERSION_KEY) ?? 0,
+  migrate: () => {
+    if (typeof window === 'undefined') return;
+    const from = get<number>(SCHEMA_VERSION_KEY) ?? 0;
+    if (from >= SCHEMA_VERSION) return;
+    // v0 -> v1: Profile gained optional tier fields (additive, no transform needed).
+    // Future schema migrations chain below this line.
+    set(SCHEMA_VERSION_KEY, SCHEMA_VERSION);
+  },
+
   getStorageUsage: (): { used: number; available: number } => {
     if (typeof window === 'undefined') return { used: 0, available: 0 };
     let used = 0;
@@ -52,3 +64,7 @@ export const storage = {
     return { used: used * 2, available: 5 * 1024 * 1024 }; // ~5MB typical limit
   },
 };
+
+if (typeof window !== 'undefined') {
+  storage.migrate();
+}

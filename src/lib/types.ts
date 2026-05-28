@@ -1,3 +1,5 @@
+import type { GradeLevel, AthleteGoal, EventPR, AthleteLevel } from './athlete-level';
+
 export interface ThrowingEvent {
   id: string;
   name: string;
@@ -37,6 +39,14 @@ export interface Profile {
   sex: 'M' | 'F' | '';
   events: string[];
   notes: string;
+  // Tier / onboarding (additive, all optional)
+  grade?: GradeLevel;
+  birthYear?: number;
+  country?: string;
+  goals?: AthleteGoal[];
+  prs?: EventPR[];
+  athleteLevel?: AthleteLevel;
+  athleteLevelOverride?: AthleteLevel | null;
 }
 
 export interface PersonalBest {
@@ -66,6 +76,7 @@ export interface EventStats {
   bestMark: number;
   avgMark: number;
   totalMark: number;
+  totalThrows: number;
 }
 
 export type TabId = 'dashboard' | 'profile' | 'log' | 'history' | 'progress';

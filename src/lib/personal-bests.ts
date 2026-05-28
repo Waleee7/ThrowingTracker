@@ -37,13 +37,13 @@ export function getCurrentSeasonBests(sessions: Session[]): PersonalBest[] {
   const year = now.getFullYear();
   const month = now.getMonth();
 
-  // School year season: Sept-June
+  // Throwing year: Sept 1 -> Aug 31 (no gap, includes summer club/USATF season)
   const seasonStart = month >= 8
     ? new Date(year, 8, 1)       // Sept of this year
     : new Date(year - 1, 8, 1);  // Sept of last year
   const seasonEnd = month >= 8
-    ? new Date(year + 1, 5, 30)  // June of next year
-    : new Date(year, 5, 30);     // June of this year
+    ? new Date(year + 1, 7, 31)  // Aug of next year
+    : new Date(year, 7, 31);     // Aug of this year
 
   return getSeasonBests(sessions, seasonStart, seasonEnd);
 }

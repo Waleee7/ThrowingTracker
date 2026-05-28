@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { Session, Profile, SessionType, MediaAttachment } from '@/lib/types';
 import { EVENTS, RPE_SCALE } from '@/lib/constants';
+import { toLocalDateKey } from '@/lib/dates';
 
 interface LogTabProps {
   profile: Profile;
@@ -13,7 +14,7 @@ interface LogTabProps {
 
 export default function LogTab({ profile, onSave, editSession, onCancelEdit }: LogTabProps) {
   const isEditing = !!editSession;
-  const today = new Date().toISOString().split('T')[0];
+  const today = toLocalDateKey();
 
   const [sessionType, setSessionType] = useState<SessionType>(editSession?.sessionType || 'training');
   const [date, setDate] = useState(editSession?.date || today);

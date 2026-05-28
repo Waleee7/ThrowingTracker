@@ -21,6 +21,7 @@ import AchievementToast from '@/components/AchievementToast';
 import Onboarding from '@/components/Onboarding';
 import { AppLogo, DashboardIcon, ProfileIcon, LogIcon, HistoryIcon, ProgressIcon, SunIcon, MoonIcon } from '@/components/Icons';
 import { calculateStreak } from '@/lib/analytics';
+import { storage } from '@/lib/storage';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
@@ -52,12 +53,9 @@ export default function Home() {
   }, [profileLoaded, sessionsLoaded, profile.name, sessions.length]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('throwingDarkMode');
-      if (saved === 'true') {
-        setDarkMode(true);
-        document.documentElement.classList.add('dark');
-      }
+    if (storage.getDarkMode()) {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
     }
   }, []);
 
@@ -69,7 +67,7 @@ export default function Home() {
       } else {
         document.documentElement.classList.remove('dark');
       }
-      localStorage.setItem('throwingDarkMode', String(next));
+      storage.setDarkMode(next);
       return next;
     });
   }, []);
@@ -152,11 +150,7 @@ export default function Home() {
   }, []);
 
   const handleOnboardingComplete = useCallback((partial: Partial<Profile>) => {
-    setProfile({
-      ...profile,
-      name: partial.name || '',
-      events: partial.events || [],
-    });
+    setProfile({ ...profile, ...partial });
     setShowOnboarding(false);
   }, [profile, setProfile]);
 

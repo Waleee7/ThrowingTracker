@@ -2,10 +2,12 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { LandingPoint } from '@/lib/types';
+import { formatDistance, metersToFeet, type DistanceUnit } from '@/lib/units';
 
 interface SectorMapProps {
   sectorDepth: number; // meters
   points: LandingPoint[];
+  distanceUnit?: DistanceUnit;
   onAddPoint?: (point: LandingPoint) => void;
   onRemovePoint?: (index: number) => void;
   readOnly?: boolean;
@@ -24,6 +26,7 @@ const CIRCLE_X = CANVAS_WIDTH / 2;
 export default function SectorMap({
   sectorDepth,
   points,
+  distanceUnit = 'm',
   onAddPoint,
   onRemovePoint,
   readOnly = false,
@@ -76,11 +79,12 @@ export default function SectorMap({
       ctx.arc(CIRCLE_X, CIRCLE_Y, r, Math.PI + halfAngle, 2 * Math.PI - halfAngle);
       ctx.stroke();
 
-      // Label
+      // Label (canvas stays metric geometry; label shows chosen unit, compact)
       if (d % 10 === 0) {
         ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
         ctx.font = '10px sans-serif';
-        ctx.fillText(`${d}m`, CIRCLE_X + 3, CIRCLE_Y - r + 12);
+        const label = distanceUnit === 'ft' ? `${Math.round(metersToFeet(d))}'` : `${d}m`;
+        ctx.fillText(label, CIRCLE_X + 3, CIRCLE_Y - r + 12);
       }
     }
 
@@ -113,7 +117,7 @@ export default function SectorMap({
         }
       }
     }
-  }, [points, depth, metersPerPixel, colorMode, overlayPoints, overlayColors]);
+  }, [points, depth, metersPerPixel, colorMode, overlayPoints, overlayColors, distanceUnit]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -200,7 +204,7 @@ export default function SectorMap({
         <div className="landing-points-list">
           {points.map((p, i) => (
             <div key={i} className="landing-point-item">
-              <span>{p.distance}m</span>
+              <span>{formatDistance(p.distance, distanceUnit)}</span>
               {onRemovePoint && (
                 <button className="remove-point-btn" onClick={() => onRemovePoint(i)}>
                   &times;

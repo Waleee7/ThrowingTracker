@@ -8,14 +8,16 @@ import {
 import { Session } from '@/lib/types';
 import { EVENTS, EVENT_COLORS } from '@/lib/constants';
 import { weekStartKey, fromDateKey } from '@/lib/dates';
+import { distanceToDisplayNumber, distanceUnitLabel, type DistanceUnit } from '@/lib/units';
 
 interface ProgressChartProps {
   sessions: Session[];
+  distanceUnit: DistanceUnit;
 }
 
 type DateRange = '1mo' | '3mo' | '6mo' | '1yr' | 'all';
 
-export default function ProgressChart({ sessions }: ProgressChartProps) {
+export default function ProgressChart({ sessions, distanceUnit }: ProgressChartProps) {
   const [dateRange, setDateRange] = useState<DateRange>('3mo');
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [chartType, setChartType] = useState<'progress' | 'volume' | 'rpe'>('progress');
@@ -104,38 +106,42 @@ export default function ProgressChart({ sessions }: ProgressChartProps) {
 
       {/* Chart */}
       <div className="chart-wrapper">
-        {chartType === 'progress' && <ProgressLine sessions={filteredSessions} events={activeEvents} />}
+        {chartType === 'progress' && <ProgressLine sessions={filteredSessions} events={activeEvents} distanceUnit={distanceUnit} />}
         {chartType === 'volume' && <VolumeBar sessions={filteredSessions} events={activeEvents} />}
-        {chartType === 'rpe' && <RPETrend sessions={filteredSessions} events={activeEvents} />}
+        {chartType === 'rpe' && <RPETrend sessions={filteredSessions} events={activeEvents} distanceUnit={distanceUnit} />}
       </div>
     </div>
   );
 }
 
-function ProgressLine({ sessions, events }: { sessions: Session[]; events: typeof EVENTS }) {
+function ProgressLine({ sessions, events, distanceUnit }: { sessions: Session[]; events: typeof EVENTS; distanceUnit: DistanceUnit }) {
   const data = useMemo(() => {
     const dateMap: Record<string, Record<string, number>> = {};
     for (const s of sessions) {
       if (!dateMap[s.date]) dateMap[s.date] = {};
       const current = dateMap[s.date][s.event];
       if (!current || s.bestMark > current) {
+        // Store canonical meters here; convert for display when building rows.
         dateMap[s.date][s.event] = s.bestMark;
       }
     }
     return Object.entries(dateMap)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, marks]) => ({
-        date: formatDate(date),
-        ...marks,
-      }));
-  }, [sessions]);
+      .map(([date, marks]) => {
+        const displayMarks: Record<string, number> = {};
+        for (const [event, meters] of Object.entries(marks)) {
+          displayMarks[event] = Math.round(distanceToDisplayNumber(meters, distanceUnit) * 100) / 100;
+        }
+        return { date: formatDate(date), ...displayMarks };
+      });
+  }, [sessions, distanceUnit]);
 
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
         <XAxis dataKey="date" fontSize={11} />
-        <YAxis fontSize={11} unit="m" />
+        <YAxis fontSize={11} unit={distanceUnitLabel(distanceUnit)} />
         <Tooltip />
         <Legend />
         {events.map((ev) => (
@@ -187,7 +193,7 @@ function VolumeBar({ sessions, events }: { sessions: Session[]; events: typeof E
   );
 }
 
-function RPETrend({ sessions, events }: { sessions: Session[]; events: typeof EVENTS }) {
+function RPETrend({ sessions, events, distanceUnit }: { sessions: Session[]; events: typeof EVENTS; distanceUnit: DistanceUnit }) {
   const data = useMemo(() => {
     const dateMap: Record<string, { rpeTotal: number; rpeCount: number; bestMark: number; event: string }> = {};
     for (const s of sessions) {
@@ -200,16 +206,16 @@ function RPETrend({ sessions, events }: { sessions: Session[]; events: typeof EV
       .map(([date, d]) => ({
         date: formatDate(date),
         rpe: d.rpeTotal / d.rpeCount,
-        bestMark: d.bestMark,
+        bestMark: Math.round(distanceToDisplayNumber(d.bestMark, distanceUnit) * 100) / 100,
       }));
-  }, [sessions]);
+  }, [sessions, distanceUnit]);
 
   return (
     <ResponsiveContainer width="100%" height={300}>
       <ComposedChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
         <XAxis dataKey="date" fontSize={11} />
-        <YAxis yAxisId="left" fontSize={11} unit="m" />
+        <YAxis yAxisId="left" fontSize={11} unit={distanceUnitLabel(distanceUnit)} />
         <YAxis yAxisId="right" orientation="right" fontSize={11} domain={[0, 10]} />
         <Tooltip />
         <Legend />

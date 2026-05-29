@@ -4,8 +4,16 @@ import { useState, useCallback } from 'react';
 import { Session } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
 import { toLocalDateKey } from '@/lib/dates';
+import {
+  formatDistance,
+  parseDistanceToMeters,
+  distanceToDisplayNumber,
+  distanceUnitLabel,
+  type DistanceUnit,
+} from '@/lib/units';
 
 interface MeetDayModeProps {
+  distanceUnit: DistanceUnit;
   onSave: (session: Session) => void;
   onExit: () => void;
 }
@@ -18,7 +26,7 @@ interface Attempt {
 
 const MAX_ATTEMPTS = 6;
 
-export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
+export default function MeetDayMode({ distanceUnit, onSave, onExit }: MeetDayModeProps) {
   const [step, setStep] = useState<'setup' | 'compete' | 'summary'>('setup');
   const [event, setEvent] = useState('');
   const [meetName, setMeetName] = useState('');
@@ -37,7 +45,8 @@ export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
   const recordAttempt = useCallback((foul: boolean) => {
     if (currentAttempt >= MAX_ATTEMPTS) return;
 
-    const distance = foul ? null : parseFloat(distanceInput);
+    // Parse entry (in the chosen unit) to canonical meters before storing.
+    const distance = foul ? null : parseDistanceToMeters(distanceInput, distanceUnit);
     if (!foul && (isNaN(distance!) || distance! <= 0)) return;
 
     setAttempts((prev) => {
@@ -61,7 +70,7 @@ export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
 
     // Haptic
     if ('vibrate' in navigator) navigator.vibrate(foul ? [30, 20, 30] : 30);
-  }, [currentAttempt, distanceInput]);
+  }, [currentAttempt, distanceInput, distanceUnit]);
 
   const validAttempts = attempts.filter((a) => a.distance !== null && !a.foul);
   const bestMark = validAttempts.length > 0 ? Math.max(...validAttempts.map((a) => a.distance!)) : 0;
@@ -81,7 +90,7 @@ export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
       weightUnit,
       bestMark: Math.round(bestMark * 100) / 100,
       avgMark: Math.round(avgMark * 100) / 100,
-      notes: `Meet: ${meetName}. Attempts: ${attempts.map((a, i) => a.foul ? `${i + 1}:FOUL` : a.distance !== null ? `${i + 1}:${a.distance}m` : '').filter(Boolean).join(', ')}`,
+      notes: `Meet: ${meetName}. Attempts: ${attempts.map((a, i) => a.foul ? `${i + 1}:FOUL` : a.distance !== null ? `${i + 1}:${formatDistance(a.distance, distanceUnit)}` : '').filter(Boolean).join(', ')}`,
       meetName,
       placement,
     };
@@ -178,7 +187,7 @@ export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
               key={i}
               className={`attempt-dot${i === currentAttempt ? ' current' : ''}${a.foul ? ' foul' : a.distance !== null ? ' recorded' : ''}`}
             >
-              {a.foul ? 'X' : a.distance !== null ? a.distance.toFixed(1) : i + 1}
+              {a.foul ? 'X' : a.distance !== null ? distanceToDisplayNumber(a.distance, distanceUnit).toFixed(distanceUnit === 'ft' ? 0 : 1) : i + 1}
             </div>
           ))}
         </div>
@@ -191,18 +200,19 @@ export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
 
             <div className="distance-entry">
               <input
-                type="number"
+                type={distanceUnit === 'ft' ? 'text' : 'number'}
+                inputMode="decimal"
                 step="0.01"
                 className="distance-input"
                 value={distanceInput}
                 onChange={(e) => setDistanceInput(e.target.value)}
-                placeholder="0.00"
+                placeholder={distanceUnit === 'ft' ? `199' 6"` : '0.00'}
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') recordAttempt(false);
                 }}
               />
-              <span className="distance-unit">m</span>
+              <span className="distance-unit">{distanceUnitLabel(distanceUnit)}</span>
             </div>
 
             <div className="attempt-actions">
@@ -223,7 +233,7 @@ export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
 
             {bestMark > 0 && (
               <div className="live-best">
-                Current Best: <strong>{bestMark.toFixed(2)}m</strong>
+                Current Best: <strong>{formatDistance(bestMark, distanceUnit)}</strong>
               </div>
             )}
           </div>
@@ -256,7 +266,7 @@ export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
       <div className="meet-summary">
         <div className="summary-hero">
           <div className="summary-event">{selectedEvent?.name}</div>
-          <div className="summary-best">{bestMark.toFixed(2)}m</div>
+          <div className="summary-best">{formatDistance(bestMark, distanceUnit)}</div>
           <div className="summary-meet">{meetName}</div>
         </div>
 
@@ -265,7 +275,7 @@ export default function MeetDayMode({ onSave, onExit }: MeetDayModeProps) {
             <div key={i} className={`summary-attempt${a.distance === bestMark && a.distance !== null ? ' best' : ''}${a.foul ? ' foul' : ''}`}>
               <span className="sa-num">{i + 1}</span>
               <span className="sa-dist">
-                {a.foul ? 'FOUL' : a.distance !== null ? `${a.distance.toFixed(2)}m` : '-'}
+                {a.foul ? 'FOUL' : a.distance !== null ? formatDistance(a.distance, distanceUnit) : '-'}
               </span>
               {a.distance === bestMark && a.distance !== null && <span className="sa-best-badge">BEST</span>}
             </div>

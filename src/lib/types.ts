@@ -1,4 +1,5 @@
 import type { GradeLevel, AthleteGoal, EventPR, AthleteLevel } from './athlete-level';
+import type { DistanceUnit } from './units';
 
 export interface ThrowingEvent {
   id: string;
@@ -39,6 +40,8 @@ export interface Profile {
   sex: 'M' | 'F' | '';
   events: string[];
   notes: string;
+  // Display preference: how distances are entered/shown. Storage is always meters.
+  distanceUnit?: DistanceUnit;
   // Tier / onboarding (additive, all optional)
   grade?: GradeLevel;
   birthYear?: number;

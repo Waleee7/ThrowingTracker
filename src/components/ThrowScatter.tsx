@@ -3,13 +3,15 @@
 import { useState, useMemo } from 'react';
 import { Session, LandingPoint } from '@/lib/types';
 import { EVENTS, EVENT_COLORS } from '@/lib/constants';
+import { formatDistance, type DistanceUnit } from '@/lib/units';
 import SectorMap from './SectorMap';
 
 interface ThrowScatterProps {
   sessions: Session[];
+  distanceUnit: DistanceUnit;
 }
 
-export default function ThrowScatter({ sessions }: ThrowScatterProps) {
+export default function ThrowScatter({ sessions, distanceUnit }: ThrowScatterProps) {
   const [colorBy, setColorBy] = useState<'session' | 'event' | 'rpe'>('session');
   const [viewMode, setViewMode] = useState<'scatter' | 'heatmap'>('scatter');
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
@@ -61,10 +63,10 @@ export default function ThrowScatter({ sessions }: ThrowScatterProps) {
   const maxDistance = allPoints.length > 0 ? Math.max(...allPoints.map((p) => p.distance)) : 20;
   const sectorDepth = Math.ceil(maxDistance / 5) * 5 + 5;
 
-  // Analysis insights
-  const avgDistance = allPoints.length > 0
-    ? (allPoints.reduce((sum, p) => sum + p.distance, 0) / allPoints.length).toFixed(1)
-    : '0';
+  // Analysis insights (canonical meters -> display unit)
+  const avgDistanceMeters = allPoints.length > 0
+    ? allPoints.reduce((sum, p) => sum + p.distance, 0) / allPoints.length
+    : 0;
 
   return (
     <div className="scatter-container">
@@ -117,6 +119,7 @@ export default function ThrowScatter({ sessions }: ThrowScatterProps) {
 
       <SectorMap
         sectorDepth={sectorDepth}
+        distanceUnit={distanceUnit}
         points={viewMode === 'heatmap' ? allPoints : []}
         readOnly
         colorMode={viewMode === 'heatmap' ? 'heatmap' : 'default'}
@@ -130,11 +133,11 @@ export default function ThrowScatter({ sessions }: ThrowScatterProps) {
           <div className="stat-label">Total Throws</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{avgDistance}m</div>
+          <div className="stat-value">{formatDistance(avgDistanceMeters, distanceUnit)}</div>
           <div className="stat-label">Avg Distance</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{maxDistance.toFixed(1)}m</div>
+          <div className="stat-value">{formatDistance(maxDistance, distanceUnit)}</div>
           <div className="stat-label">Best</div>
         </div>
       </div>

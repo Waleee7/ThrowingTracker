@@ -2,6 +2,7 @@
 
 import { Session, Profile, PersonalBest, TabId } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
+import { formatDistance, type DistanceUnit } from '@/lib/units';
 import { calculateStreak, getWeeklyStats } from '@/lib/analytics';
 import { calculatePersonalBests, getCurrentSeasonBests } from '@/lib/personal-bests';
 import { shouldShowBackupReminder } from '@/lib/export';
@@ -15,6 +16,7 @@ interface DashboardTabProps {
 }
 
 export default function DashboardTab({ sessions, profile, onNavigate, onStartMeetDay }: DashboardTabProps) {
+  const distanceUnit = profile.distanceUnit ?? 'm';
   const streak = calculateStreak(sessions);
   const weeklyStats = getWeeklyStats(sessions);
   const hasProfile = profile.name && profile.sex;
@@ -79,7 +81,7 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
               const event = EVENTS.find((e) => e.id === pb.event);
               const seasonPB = seasonPBs.find((s) => s.event === pb.event);
               return (
-                <PBCard key={pb.event} pb={pb} seasonPB={seasonPB} eventName={event?.name || pb.event} />
+                <PBCard key={pb.event} pb={pb} seasonPB={seasonPB} eventName={event?.name || pb.event} distanceUnit={distanceUnit} />
               );
             })}
           </div>
@@ -98,7 +100,7 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
             <div className="session-stats">
               <div className="session-stat">
                 <span className="session-stat-label">Best</span>
-                <span className="session-stat-value">{lastSession.bestMark}m</span>
+                <span className="session-stat-value">{formatDistance(lastSession.bestMark, distanceUnit)}</span>
               </div>
               <div className="session-stat">
                 <span className="session-stat-label">RPE</span>
@@ -136,16 +138,16 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
   );
 }
 
-function PBCard({ pb, seasonPB, eventName }: { pb: PersonalBest; seasonPB?: PersonalBest; eventName: string }) {
+function PBCard({ pb, seasonPB, eventName, distanceUnit }: { pb: PersonalBest; seasonPB?: PersonalBest; eventName: string; distanceUnit: DistanceUnit }) {
   return (
     <div className="pb-card">
       <div className="pb-event">{eventName}</div>
-      <div className="pb-mark">{pb.mark}m</div>
+      <div className="pb-mark">{formatDistance(pb.mark, distanceUnit)}</div>
       <div className="pb-date">
         {new Date(pb.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
       </div>
       {seasonPB && seasonPB.sessionId !== pb.sessionId && (
-        <div className="pb-season">Season: {seasonPB.mark}m</div>
+        <div className="pb-season">Season: {formatDistance(seasonPB.mark, distanceUnit)}</div>
       )}
     </div>
   );

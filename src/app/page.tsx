@@ -166,6 +166,8 @@ export default function Home() {
     );
   }
 
+  const distanceUnit = profile.distanceUnit ?? 'm';
+
   // Onboarding for first-time users
   if (showOnboarding) {
     return (
@@ -182,6 +184,7 @@ export default function Home() {
       <div className={`app${darkMode ? ' dark-mode' : ''}`}>
         <FloatingElements />
         <MeetDayMode
+          distanceUnit={distanceUnit}
           onSave={handleMeetSave}
           onExit={() => setShowMeetDay(false)}
         />
@@ -254,6 +257,7 @@ export default function Home() {
         {activeTab === 'history' && (
           <HistoryTab
             sessions={sessions}
+            distanceUnit={distanceUnit}
             onEditSession={handleEditSession}
             onDeleteSession={handleDeleteSession}
           />
@@ -261,10 +265,10 @@ export default function Home() {
         {activeTab === 'progress' && (
           <div className="tab-content">
             <h2 className="tab-title">Progress</h2>
-            <ProgressChart sessions={sessions} />
+            <ProgressChart sessions={sessions} distanceUnit={distanceUnit} />
             <div style={{ marginTop: 32 }}>
               <h3 className="section-title">Landing Zone Analysis</h3>
-              <ThrowScatter sessions={sessions} />
+              <ThrowScatter sessions={sessions} distanceUnit={distanceUnit} />
             </div>
           </div>
         )}
@@ -276,6 +280,7 @@ export default function Home() {
           eventName={prAlert.eventName}
           newMark={prAlert.newMark}
           previousBest={prAlert.previousBest}
+          distanceUnit={distanceUnit}
           onClose={() => setPrAlert(null)}
         />
       )}

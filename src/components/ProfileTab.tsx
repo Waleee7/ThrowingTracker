@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { Profile } from '@/lib/types';
-import { EVENTS, HEIGHT_UNITS, WEIGHT_UNITS } from '@/lib/constants';
+import type { DistanceUnit } from '@/lib/units';
+import { EVENTS, HEIGHT_UNITS, WEIGHT_UNITS, DISTANCE_UNITS } from '@/lib/constants';
 import { exportToJSON, exportToCSV, importFromJSON } from '@/lib/export';
 
 interface ProfileTabProps {
@@ -22,12 +23,16 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
   const [sex, setSex] = useState(profile.sex);
   const [events, setEvents] = useState<string[]>(profile.events);
   const [notes, setNotes] = useState(profile.notes);
+  const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>(profile.distanceUnit ?? 'm');
   const [saveMsg, setSaveMsg] = useState('');
   const [importMsg, setImportMsg] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = () => {
+    // Spread the existing profile first so tier/onboarding fields (grade, prs,
+    // goals, athleteLevel, etc.) are preserved — this form only edits a subset.
     const newProfile: Profile = {
+      ...profile,
       name,
       height: {
         value: heightUnit === 'cm' ? heightValue : '',
@@ -39,6 +44,7 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
       sex,
       events,
       notes,
+      distanceUnit,
     };
     onSave(newProfile);
     setSaveMsg('\u2713 Saved');
@@ -177,6 +183,23 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
                 />
                 <span>{s === 'M' ? 'Male' : 'Female'}</span>
               </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Distance display unit */}
+        <div className="form-group">
+          <label className="label">Distance Unit</label>
+          <div className="toggle-group">
+            {DISTANCE_UNITS.map((unit) => (
+              <button
+                key={unit}
+                type="button"
+                className={`toggle-button${distanceUnit === unit ? ' active' : ''}`}
+                onClick={() => setDistanceUnit(unit)}
+              >
+                {unit === 'm' ? 'Meters' : 'Feet / Inches'}
+              </button>
             ))}
           </div>
         </div>

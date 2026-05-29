@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { Session, Profile, SessionType, MediaAttachment } from '@/lib/types';
 import { EVENTS, RPE_SCALE } from '@/lib/constants';
 import { toLocalDateKey } from '@/lib/dates';
+import { formatDistance, parseDistanceToMeters } from '@/lib/units';
 
 interface LogTabProps {
   profile: Profile;
@@ -15,6 +16,13 @@ interface LogTabProps {
 export default function LogTab({ profile, onSave, editSession, onCancelEdit }: LogTabProps) {
   const isEditing = !!editSession;
   const today = toLocalDateKey();
+  const distanceUnit = profile.distanceUnit ?? 'm';
+
+  // Convert a stored canonical-meters value into the entry string for the chosen unit.
+  const markToInput = (meters: number | undefined): string => {
+    if (meters === undefined) return '';
+    return distanceUnit === 'ft' ? formatDistance(meters, 'ft', { withUnit: false }) : meters.toString();
+  };
 
   const [sessionType, setSessionType] = useState<SessionType>(editSession?.sessionType || 'training');
   const [date, setDate] = useState(editSession?.date || today);
@@ -23,8 +31,8 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
   const [throws, setThrows] = useState(editSession?.throws?.toString() || '');
   const [weight, setWeight] = useState(editSession?.implementWeight?.toString() || '');
   const [weightUnit, setWeightUnit] = useState(editSession?.weightUnit || 'kg');
-  const [bestMark, setBestMark] = useState(editSession?.bestMark?.toString() || '');
-  const [avgMark, setAvgMark] = useState(editSession?.avgMark?.toString() || '');
+  const [bestMark, setBestMark] = useState(markToInput(editSession?.bestMark));
+  const [avgMark, setAvgMark] = useState(markToInput(editSession?.avgMark));
   const [meetName, setMeetName] = useState(editSession?.meetName || '');
   const [placement, setPlacement] = useState(editSession?.placement || '');
   const [notes, setNotes] = useState(editSession?.notes || '');
@@ -40,9 +48,14 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
     if (!event) newErrors.event = 'Select event';
     if (!throws || parseInt(throws) < 1) newErrors.throws = 'Required';
     if (!weight) newErrors.weight = 'Required';
+
+    const bestMeters = parseDistanceToMeters(bestMark, distanceUnit);
+    const avgMeters = parseDistanceToMeters(avgMark, distanceUnit);
     if (!bestMark) newErrors.best = 'Required';
+    else if (!isFinite(bestMeters) || bestMeters <= 0) newErrors.best = 'Invalid mark';
     if (!avgMark) newErrors.avg = 'Required';
-    if (bestMark && avgMark && parseFloat(avgMark) > parseFloat(bestMark)) {
+    else if (!isFinite(avgMeters) || avgMeters <= 0) newErrors.avg = 'Invalid mark';
+    if (isFinite(bestMeters) && isFinite(avgMeters) && avgMeters > bestMeters) {
       newErrors.avg = 'Cannot exceed best';
     }
     setErrors(newErrors);
@@ -79,8 +92,8 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
         throws: parseInt(throws),
         implementWeight: parseFloat(weight),
         weightUnit: weightUnit as 'kg' | 'lbs',
-        bestMark: parseFloat(bestMark),
-        avgMark: parseFloat(avgMark),
+        bestMark: parseDistanceToMeters(bestMark, distanceUnit),
+        avgMark: parseDistanceToMeters(avgMark, distanceUnit),
         notes,
         meetName: sessionType === 'competition' ? meetName : '',
         placement: sessionType === 'competition' ? placement : '',
@@ -241,27 +254,29 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
         {/* Best & Avg row */}
         <div className="form-row">
           <div className="form-group">
-            <label className="label">Best (m)</label>
+            <label className="label">{distanceUnit === 'ft' ? 'Best (ft/in)' : 'Best (m)'}</label>
             <input
-              type="number"
+              type={distanceUnit === 'ft' ? 'text' : 'number'}
+              inputMode="decimal"
               step="0.01"
               className={`input${errors.best ? ' error' : ''}`}
               value={bestMark}
               onChange={(e) => { setBestMark(e.target.value); setErrors((prev) => ({ ...prev, best: '' })); }}
-              placeholder="15.50"
+              placeholder={distanceUnit === 'ft' ? `199' 6"` : '15.50'}
             />
             {errors.best && <span className="error-text">{errors.best}</span>}
           </div>
 
           <div className="form-group">
-            <label className="label">Avg (m)</label>
+            <label className="label">{distanceUnit === 'ft' ? 'Avg (ft/in)' : 'Avg (m)'}</label>
             <input
-              type="number"
+              type={distanceUnit === 'ft' ? 'text' : 'number'}
+              inputMode="decimal"
               step="0.01"
               className={`input${errors.avg ? ' error' : ''}`}
               value={avgMark}
               onChange={(e) => { setAvgMark(e.target.value); setErrors((prev) => ({ ...prev, avg: '' })); }}
-              placeholder="14.20"
+              placeholder={distanceUnit === 'ft' ? `185' 0"` : '14.20'}
             />
             {errors.avg && <span className="error-text">{errors.avg}</span>}
           </div>

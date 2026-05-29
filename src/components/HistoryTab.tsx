@@ -4,14 +4,16 @@ import { useState } from 'react';
 import { Session, HistoryView, WeeklyMonthlyStats } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
 import { getWeeklyStats, getMonthlyStats } from '@/lib/analytics';
+import { formatDistance, formatWeight, type DistanceUnit } from '@/lib/units';
 
 interface HistoryTabProps {
   sessions: Session[];
+  distanceUnit: DistanceUnit;
   onEditSession: (session: Session) => void;
   onDeleteSession: (id: string) => void;
 }
 
-export default function HistoryTab({ sessions, onEditSession, onDeleteSession }: HistoryTabProps) {
+export default function HistoryTab({ sessions, distanceUnit, onEditSession, onDeleteSession }: HistoryTabProps) {
   const [view, setView] = useState<HistoryView>('recent');
   const weeklyStats = getWeeklyStats(sessions);
   const monthlyStats = getMonthlyStats(sessions);
@@ -33,20 +35,22 @@ export default function HistoryTab({ sessions, onEditSession, onDeleteSession }:
       </div>
 
       {view === 'recent' && (
-        <RecentView sessions={sessions} onEdit={onEditSession} onDelete={onDeleteSession} />
+        <RecentView sessions={sessions} distanceUnit={distanceUnit} onEdit={onEditSession} onDelete={onDeleteSession} />
       )}
-      {view === 'weekly' && <SummaryView stats={weeklyStats} />}
-      {view === 'monthly' && <SummaryView stats={monthlyStats} />}
+      {view === 'weekly' && <SummaryView stats={weeklyStats} distanceUnit={distanceUnit} />}
+      {view === 'monthly' && <SummaryView stats={monthlyStats} distanceUnit={distanceUnit} />}
     </div>
   );
 }
 
 function RecentView({
   sessions,
+  distanceUnit,
   onEdit,
   onDelete,
 }: {
   sessions: Session[];
+  distanceUnit: DistanceUnit;
   onEdit: (s: Session) => void;
   onDelete: (id: string) => void;
 }) {
@@ -98,13 +102,13 @@ function RecentView({
               )}
             </div>
             <div className="history-stats">
-              <span>Best: {session.bestMark}m</span>
+              <span>Best: {formatDistance(session.bestMark, distanceUnit)}</span>
               <span>&bull;</span>
               <span>RPE: {session.rpe}/10</span>
               <span>&bull;</span>
               <span>{session.throws} throws</span>
               <span>&bull;</span>
-              <span>{session.implementWeight}{session.weightUnit}</span>
+              <span>{formatWeight(session.implementWeight, session.weightUnit)}</span>
             </div>
             {session.meetName && (
               <div className="history-meet">{session.meetName}{session.placement ? ` — ${session.placement}` : ''}</div>
@@ -149,7 +153,7 @@ function RecentView({
   );
 }
 
-function SummaryView({ stats }: { stats: WeeklyMonthlyStats }) {
+function SummaryView({ stats, distanceUnit }: { stats: WeeklyMonthlyStats; distanceUnit: DistanceUnit }) {
   const eventKeys = Object.keys(stats.byEvent);
 
   return (
@@ -190,11 +194,11 @@ function SummaryView({ stats }: { stats: WeeklyMonthlyStats }) {
                 <div className="event-stats-grid">
                   <div>
                     <div className="mini-stat-label">Best</div>
-                    <div className="mini-stat-value">{eventData.bestMark.toFixed(2)}m</div>
+                    <div className="mini-stat-value">{formatDistance(eventData.bestMark, distanceUnit)}</div>
                   </div>
                   <div>
                     <div className="mini-stat-label">Avg</div>
-                    <div className="mini-stat-value">{eventData.avgMark.toFixed(2)}m</div>
+                    <div className="mini-stat-value">{formatDistance(eventData.avgMark, distanceUnit)}</div>
                   </div>
                   <div>
                     <div className="mini-stat-label">Sessions</div>

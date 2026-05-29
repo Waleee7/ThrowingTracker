@@ -31,6 +31,7 @@ export const EVENTS: ThrowingEvent[] = [
 export const RPE_SCALE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 export const HEIGHT_UNITS = ['cm', 'ft/in'] as const;
 export const WEIGHT_UNITS = ['kg', 'lbs'] as const;
+export const DISTANCE_UNITS = ['m', 'ft'] as const;
 
 export const DEFAULT_PROFILE = {
   name: '',
@@ -39,6 +40,7 @@ export const DEFAULT_PROFILE = {
   sex: '' as const,
   events: [] as string[],
   notes: '',
+  distanceUnit: 'm' as const,
 };
 
 export const SECTOR_ANGLE_DEG = 34.92;

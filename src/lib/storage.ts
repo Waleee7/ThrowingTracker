@@ -5,7 +5,7 @@ const SESSIONS_KEY = 'throwingSessions';
 const LAST_EXPORT_KEY = 'throwingLastExport';
 const DARK_MODE_KEY = 'throwingDarkMode';
 const SCHEMA_VERSION_KEY = 'throwingSchemaVersion';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 function get<T>(key: string): T | null {
   if (typeof window === 'undefined') return null;
@@ -48,6 +48,15 @@ export const storage = {
     const from = get<number>(SCHEMA_VERSION_KEY) ?? 0;
     if (from >= SCHEMA_VERSION) return;
     // v0 -> v1: Profile gained optional tier fields (additive, no transform needed).
+    // v1 -> v2: Canonical units. Distances were always stored in meters, so existing
+    //   session marks are already canonical. Profile gains distanceUnit; default to 'm'
+    //   for existing users so their experience is unchanged.
+    if (from < 2) {
+      const profile = get<Profile>(PROFILE_KEY);
+      if (profile && profile.distanceUnit === undefined) {
+        set(PROFILE_KEY, { ...profile, distanceUnit: 'm' });
+      }
+    }
     // Future schema migrations chain below this line.
     set(SCHEMA_VERSION_KEY, SCHEMA_VERSION);
   },

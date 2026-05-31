@@ -5,6 +5,8 @@ import { Session, HistoryView, WeeklyMonthlyStats } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
 import { getWeeklyStats, getMonthlyStats } from '@/lib/analytics';
 import { formatDistance, formatWeight, type DistanceUnit } from '@/lib/units';
+import { countFouls } from '@/lib/throws';
+import SessionMedia from './SessionMedia';
 
 interface HistoryTabProps {
   sessions: Session[];
@@ -107,6 +109,12 @@ function RecentView({
               <span>RPE: {session.rpe}/10</span>
               <span>&bull;</span>
               <span>{session.throws} throws</span>
+              {session.throwLog && countFouls(session.throwLog) > 0 && (
+                <>
+                  <span>&bull;</span>
+                  <span>{countFouls(session.throwLog)} foul{countFouls(session.throwLog) > 1 ? 's' : ''}</span>
+                </>
+              )}
               <span>&bull;</span>
               <span>{formatWeight(session.implementWeight, session.weightUnit)}</span>
             </div>
@@ -114,6 +122,22 @@ function RecentView({
               <div className="history-meet">{session.meetName}{session.placement ? ` — ${session.placement}` : ''}</div>
             )}
             {session.notes && <div className="history-notes">{session.notes}</div>}
+
+            {isExpanded && session.throwLog && session.throwLog.length > 0 && (
+              <div className="history-throws" onClick={(e) => e.stopPropagation()}>
+                {session.throwLog.map((t, i) => (
+                  <span key={i} className={`throw-chip${t.foul ? ' foul' : ''}`}>
+                    {t.foul ? 'F' : formatDistance(t.mark, distanceUnit, { withUnit: false })}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {isExpanded && session.media && session.media.length > 0 && (
+              <div className="history-media" onClick={(e) => e.stopPropagation()}>
+                <SessionMedia media={session.media} />
+              </div>
+            )}
 
             {isExpanded && (
               <div className="history-actions" onClick={(e) => e.stopPropagation()}>

@@ -5,7 +5,7 @@ const SESSIONS_KEY = 'throwingSessions';
 const LAST_EXPORT_KEY = 'throwingLastExport';
 const DARK_MODE_KEY = 'throwingDarkMode';
 const SCHEMA_VERSION_KEY = 'throwingSchemaVersion';
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 function get<T>(key: string): T | null {
   if (typeof window === 'undefined') return null;
@@ -57,6 +57,8 @@ export const storage = {
         set(PROFILE_KEY, { ...profile, distanceUnit: 'm' });
       }
     }
+    // v2 -> v3: Session gained optional throwLog (additive, no transform needed;
+    //   existing sessions keep numeric `throws` as the source of truth).
     // Future schema migrations chain below this line.
     set(SCHEMA_VERSION_KEY, SCHEMA_VERSION);
   },

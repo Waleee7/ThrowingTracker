@@ -1331,6 +1331,172 @@ body {
 }
 
 /* ============================================================================
+   THROW-BY-THROW LOG (W5)
+   ============================================================================ */
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+}
+
+.checkbox-label input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #667eea;
+  cursor: pointer;
+}
+
+.dark .checkbox-label,
+.dark-mode .checkbox-label {
+  color: #c0c0d0;
+}
+
+.throw-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.throw-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.throw-num {
+  flex: 0 0 22px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8888aa;
+  text-align: center;
+}
+
+.throw-mark-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.throw-mark-input:disabled {
+  opacity: 0.5;
+}
+
+.foul-toggle {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.75);
+  color: #888;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.foul-toggle.active {
+  background-color: #ff3b30;
+  border-color: #ff3b30;
+  color: #fff;
+}
+
+.dark .foul-toggle,
+.dark-mode .foul-toggle {
+  background-color: rgba(30, 30, 50, 0.7);
+  border-color: rgba(102, 126, 234, 0.3);
+  color: #8888aa;
+}
+
+.dark .foul-toggle.active,
+.dark-mode .foul-toggle.active {
+  background-color: #ff3b30;
+  border-color: #ff3b30;
+  color: #fff;
+}
+
+.remove-throw-button {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background-color: rgba(0, 0, 0, 0.06);
+  color: #888;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.remove-throw-button:hover {
+  background-color: rgba(255, 59, 48, 0.15);
+  color: #ff3b30;
+}
+
+.dark .remove-throw-button,
+.dark-mode .remove-throw-button {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #8888aa;
+}
+
+.derived-summary {
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #667eea;
+  background-color: rgba(102, 126, 234, 0.08);
+  border-radius: 8px;
+}
+
+.dark .derived-summary,
+.dark-mode .derived-summary {
+  color: #a3b3ff;
+  background-color: rgba(102, 126, 234, 0.15);
+}
+
+.history-throws {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.throw-chip {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  background-color: rgba(102, 126, 234, 0.12);
+  color: #667eea;
+}
+
+.throw-chip.foul {
+  background-color: rgba(255, 59, 48, 0.12);
+  color: #ff3b30;
+}
+
+.dark .throw-chip,
+.dark-mode .throw-chip {
+  background-color: rgba(102, 126, 234, 0.2);
+  color: #a3b3ff;
+}
+
+.dark .throw-chip.foul,
+.dark-mode .throw-chip.foul {
+  background-color: rgba(255, 59, 48, 0.2);
+  color: #ff7a70;
+}
+
+.history-media {
+  margin-top: 4px;
+}
+
+/* ============================================================================
    DATA MANAGEMENT
    ============================================================================ */
 

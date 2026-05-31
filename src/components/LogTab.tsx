@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Session, Profile, SessionType, MediaAttachment } from '@/lib/types';
+import { Session, Profile, SessionType, MediaAttachment, ThrowEntry } from '@/lib/types';
 import { EVENTS, RPE_SCALE } from '@/lib/constants';
 import { toLocalDateKey } from '@/lib/dates';
 import { formatDistance, parseDistanceToMeters } from '@/lib/units';
+import { storeMedia, deleteMedia } from '@/lib/media-storage';
+import { deriveSessionMetrics, countFouls } from '@/lib/throws';
 
 interface LogTabProps {
   profile: Profile;
@@ -39,24 +41,53 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
   const [saving, setSaving] = useState(false);
 
   const [mediaFiles, setMediaFiles] = useState<Array<{ name: string; type: string; url: string; file?: File }>>([]);
+  const [keptMedia, setKeptMedia] = useState<MediaAttachment[]>(editSession?.media ?? []);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Optional throw-by-throw log (W5). When on, it is the source of truth for
+  // throws/best/avg (fouls count as attempts but are excluded from best+avg).
+  // Marks are entered in the chosen display unit and stored as canonical meters.
+  const [useDetailed, setUseDetailed] = useState<boolean>((editSession?.throwLog?.length ?? 0) > 0);
+  const [throwRows, setThrowRows] = useState<Array<{ mark: string; foul: boolean }>>(
+    editSession?.throwLog?.map((t) => ({ mark: t.foul ? '' : markToInput(t.mark), foul: t.foul })) ?? []
+  );
+
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const detailedThrows: ThrowEntry[] = throwRows.map((r) => ({
+    mark: r.foul ? 0 : parseDistanceToMeters(r.mark, distanceUnit),
+    foul: r.foul,
+  }));
+  const derived = deriveSessionMetrics(detailedThrows);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
     if (!event) newErrors.event = 'Select event';
-    if (!throws || parseInt(throws) < 1) newErrors.throws = 'Required';
     if (!weight) newErrors.weight = 'Required';
 
-    const bestMeters = parseDistanceToMeters(bestMark, distanceUnit);
-    const avgMeters = parseDistanceToMeters(avgMark, distanceUnit);
-    if (!bestMark) newErrors.best = 'Required';
-    else if (!isFinite(bestMeters) || bestMeters <= 0) newErrors.best = 'Invalid mark';
-    if (!avgMark) newErrors.avg = 'Required';
-    else if (!isFinite(avgMeters) || avgMeters <= 0) newErrors.avg = 'Invalid mark';
-    if (isFinite(bestMeters) && isFinite(avgMeters) && avgMeters > bestMeters) {
-      newErrors.avg = 'Cannot exceed best';
+    if (useDetailed) {
+      if (throwRows.length === 0) {
+        newErrors.detailed = 'Add at least one throw';
+      } else {
+        const anyInvalid = throwRows.some((r) => {
+          if (r.foul) return false;
+          const m = parseDistanceToMeters(r.mark, distanceUnit);
+          return !r.mark || !isFinite(m) || m <= 0;
+        });
+        if (anyInvalid) newErrors.detailed = 'Every non-foul throw needs a valid mark';
+        else if (derived.bestMark <= 0) newErrors.detailed = 'Add at least one legal (non-foul) mark';
+      }
+    } else {
+      if (!throws || parseInt(throws) < 1) newErrors.throws = 'Required';
+      const bestMeters = parseDistanceToMeters(bestMark, distanceUnit);
+      const avgMeters = parseDistanceToMeters(avgMark, distanceUnit);
+      if (!bestMark) newErrors.best = 'Required';
+      else if (!isFinite(bestMeters) || bestMeters <= 0) newErrors.best = 'Invalid mark';
+      if (!avgMark) newErrors.avg = 'Required';
+      else if (!isFinite(avgMeters) || avgMeters <= 0) newErrors.avg = 'Invalid mark';
+      if (isFinite(bestMeters) && isFinite(avgMeters) && avgMeters > bestMeters) {
+        newErrors.avg = 'Cannot exceed best';
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -68,32 +99,56 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
 
     setSaving(true);
 
-    // Convert media files to base64 for persistence
+    // Small images persist inline as base64; videos + large images go to
+    // IndexedDB (localStorage can't hold them) and store only a key on the session.
     const processMedia = async (): Promise<MediaAttachment[]> => {
       const attachments: MediaAttachment[] = [];
       for (const mf of mediaFiles) {
-        if (mf.file && mf.file.type.startsWith('image/') && mf.file.size < 2 * 1024 * 1024) {
+        if (!mf.file) continue;
+        const id = Date.now().toString() + Math.random();
+        const isSmallImage = mf.file.type.startsWith('image/') && mf.file.size < 2 * 1024 * 1024;
+        if (isSmallImage) {
           const dataUrl = await fileToBase64(mf.file);
-          attachments.push({ id: Date.now().toString() + Math.random(), name: mf.name, type: mf.type, dataUrl });
+          attachments.push({ id, name: mf.name, type: mf.type, dataUrl });
         } else {
-          attachments.push({ id: Date.now().toString() + Math.random(), name: mf.name, type: mf.type });
+          const key = `media-${id}`;
+          try {
+            await storeMedia(key, mf.file);
+            attachments.push({ id, name: mf.name, type: mf.type, indexedDbKey: key });
+          } catch (err) {
+            // Don't record an attachment we couldn't actually persist.
+            console.error('Failed to store media:', err);
+          }
         }
       }
       return attachments;
     };
 
-    processMedia().then((media) => {
+    processMedia().then((newMedia) => {
+      const media = [...keptMedia, ...newMedia];
+
+      // On edit: clean up IndexedDB blobs whose attachments the user removed.
+      if (editSession?.media) {
+        const finalKeys = new Set(media.map((m) => m.indexedDbKey).filter(Boolean) as string[]);
+        for (const old of editSession.media) {
+          if (old.indexedDbKey && !finalKeys.has(old.indexedDbKey)) {
+            deleteMedia(old.indexedDbKey).catch(() => {});
+          }
+        }
+      }
+
       const session: Session = {
         id: editSession?.id || Date.now().toString(),
         date,
         event,
         sessionType,
         rpe,
-        throws: parseInt(throws),
+        throws: useDetailed ? derived.throws : parseInt(throws),
+        throwLog: useDetailed ? detailedThrows : undefined,
         implementWeight: parseFloat(weight),
         weightUnit: weightUnit as 'kg' | 'lbs',
-        bestMark: parseDistanceToMeters(bestMark, distanceUnit),
-        avgMark: parseDistanceToMeters(avgMark, distanceUnit),
+        bestMark: useDetailed ? derived.bestMark : parseDistanceToMeters(bestMark, distanceUnit),
+        avgMark: useDetailed ? derived.avgMark : parseDistanceToMeters(avgMark, distanceUnit),
         notes,
         meetName: sessionType === 'competition' ? meetName : '',
         placement: sessionType === 'competition' ? placement : '',
@@ -122,6 +177,15 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
     }));
     setMediaFiles((prev) => [...prev, ...newFiles]);
   };
+
+  // Drops the reference only; the IndexedDB blob is cleaned up on save (see
+  // handleSubmit) so cancelling an edit never loses media.
+  const removeKeptMedia = (id: string) => setKeptMedia((prev) => prev.filter((m) => m.id !== id));
+
+  const addThrowRow = () => setThrowRows((prev) => [...prev, { mark: '', foul: false }]);
+  const updateThrowRow = (i: number, patch: Partial<{ mark: string; foul: boolean }>) =>
+    setThrowRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+  const removeThrowRow = (i: number) => setThrowRows((prev) => prev.filter((_, idx) => idx !== i));
 
   const removeMedia = (index: number) => {
     setMediaFiles((prev) => {
@@ -212,75 +276,140 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
           </div>
         </div>
 
-        {/* Throws & Weight row */}
-        <div className="form-row">
-          <div className="form-group">
-            <label className="label">Throws</label>
+        {/* Weight */}
+        <div className="form-group">
+          <label className="label">Implement Weight</label>
+          <div className="input-group">
             <input
               type="number"
-              className={`input${errors.throws ? ' error' : ''}`}
-              value={throws}
-              onChange={(e) => { setThrows(e.target.value); setErrors((prev) => ({ ...prev, throws: '' })); }}
-              placeholder="20"
-              min="1"
+              step="0.01"
+              className={`input-small${errors.weight ? ' error' : ''}`}
+              value={weight}
+              onChange={(e) => { setWeight(e.target.value); setErrors((prev) => ({ ...prev, weight: '' })); }}
+              placeholder="7.26"
             />
-            {errors.throws && <span className="error-text">{errors.throws}</span>}
+            <select
+              className="select"
+              value={weightUnit}
+              onChange={(e) => setWeightUnit(e.target.value as 'kg' | 'lbs')}
+            >
+              <option value="kg">kg</option>
+              <option value="lbs">lbs</option>
+            </select>
           </div>
+          {errors.weight && <span className="error-text">{errors.weight}</span>}
+        </div>
 
-          <div className="form-group">
-            <label className="label">Weight</label>
-            <div className="input-group">
+        {/* Detailed throw-log toggle */}
+        <div className="form-group">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={useDetailed}
+              onChange={(e) => {
+                const on = e.target.checked;
+                setUseDetailed(on);
+                if (on && throwRows.length === 0) setThrowRows([{ mark: '', foul: false }]);
+                setErrors((prev) => ({ ...prev, detailed: '', throws: '', best: '', avg: '' }));
+              }}
+            />
+            <span>Log each throw (marks &amp; fouls)</span>
+          </label>
+        </div>
+
+        {!useDetailed ? (
+          <>
+            {/* Throws */}
+            <div className="form-group">
+              <label className="label">Throws</label>
               <input
                 type="number"
-                step="0.01"
-                className={`input-small${errors.weight ? ' error' : ''}`}
-                value={weight}
-                onChange={(e) => { setWeight(e.target.value); setErrors((prev) => ({ ...prev, weight: '' })); }}
-                placeholder="7.26"
+                className={`input${errors.throws ? ' error' : ''}`}
+                value={throws}
+                onChange={(e) => { setThrows(e.target.value); setErrors((prev) => ({ ...prev, throws: '' })); }}
+                placeholder="20"
+                min="1"
               />
-              <select
-                className="select"
-                value={weightUnit}
-                onChange={(e) => setWeightUnit(e.target.value as 'kg' | 'lbs')}
-              >
-                <option value="kg">kg</option>
-                <option value="lbs">lbs</option>
-              </select>
+              {errors.throws && <span className="error-text">{errors.throws}</span>}
             </div>
-            {errors.weight && <span className="error-text">{errors.weight}</span>}
-          </div>
-        </div>
 
-        {/* Best & Avg row */}
-        <div className="form-row">
-          <div className="form-group">
-            <label className="label">{distanceUnit === 'ft' ? 'Best (ft/in)' : 'Best (m)'}</label>
-            <input
-              type={distanceUnit === 'ft' ? 'text' : 'number'}
-              inputMode="decimal"
-              step="0.01"
-              className={`input${errors.best ? ' error' : ''}`}
-              value={bestMark}
-              onChange={(e) => { setBestMark(e.target.value); setErrors((prev) => ({ ...prev, best: '' })); }}
-              placeholder={distanceUnit === 'ft' ? `199' 6"` : '15.50'}
-            />
-            {errors.best && <span className="error-text">{errors.best}</span>}
-          </div>
+            {/* Best & Avg row */}
+            <div className="form-row">
+              <div className="form-group">
+                <label className="label">{distanceUnit === 'ft' ? 'Best (ft/in)' : 'Best (m)'}</label>
+                <input
+                  type={distanceUnit === 'ft' ? 'text' : 'number'}
+                  inputMode="decimal"
+                  step="0.01"
+                  className={`input${errors.best ? ' error' : ''}`}
+                  value={bestMark}
+                  onChange={(e) => { setBestMark(e.target.value); setErrors((prev) => ({ ...prev, best: '' })); }}
+                  placeholder={distanceUnit === 'ft' ? `199' 6"` : '15.50'}
+                />
+                {errors.best && <span className="error-text">{errors.best}</span>}
+              </div>
 
+              <div className="form-group">
+                <label className="label">{distanceUnit === 'ft' ? 'Avg (ft/in)' : 'Avg (m)'}</label>
+                <input
+                  type={distanceUnit === 'ft' ? 'text' : 'number'}
+                  inputMode="decimal"
+                  step="0.01"
+                  className={`input${errors.avg ? ' error' : ''}`}
+                  value={avgMark}
+                  onChange={(e) => { setAvgMark(e.target.value); setErrors((prev) => ({ ...prev, avg: '' })); }}
+                  placeholder={distanceUnit === 'ft' ? `185' 0"` : '14.20'}
+                />
+                {errors.avg && <span className="error-text">{errors.avg}</span>}
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Throw-by-throw log */
           <div className="form-group">
-            <label className="label">{distanceUnit === 'ft' ? 'Avg (ft/in)' : 'Avg (m)'}</label>
-            <input
-              type={distanceUnit === 'ft' ? 'text' : 'number'}
-              inputMode="decimal"
-              step="0.01"
-              className={`input${errors.avg ? ' error' : ''}`}
-              value={avgMark}
-              onChange={(e) => { setAvgMark(e.target.value); setErrors((prev) => ({ ...prev, avg: '' })); }}
-              placeholder={distanceUnit === 'ft' ? `185' 0"` : '14.20'}
-            />
-            {errors.avg && <span className="error-text">{errors.avg}</span>}
+            <label className="label">Throws</label>
+            {throwRows.length > 0 && (
+              <div className="throw-rows">
+                {throwRows.map((r, i) => (
+                  <div className="throw-row" key={i}>
+                    <span className="throw-num">{i + 1}</span>
+                    <input
+                      type={distanceUnit === 'ft' ? 'text' : 'number'}
+                      inputMode="decimal"
+                      step="0.01"
+                      className="input throw-mark-input"
+                      value={r.foul ? '' : r.mark}
+                      disabled={r.foul}
+                      onChange={(e) => { updateThrowRow(i, { mark: e.target.value }); setErrors((prev) => ({ ...prev, detailed: '' })); }}
+                      placeholder={r.foul ? 'Foul' : distanceUnit === 'ft' ? `199' 6"` : '15.50'}
+                    />
+                    <button
+                      type="button"
+                      className={`foul-toggle${r.foul ? ' active' : ''}`}
+                      onClick={() => { updateThrowRow(i, { foul: !r.foul }); setErrors((prev) => ({ ...prev, detailed: '' })); }}
+                      title="Mark as foul"
+                    >
+                      Foul
+                    </button>
+                    <button type="button" className="remove-throw-button" onClick={() => removeThrowRow(i)} title="Remove throw">
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button type="button" className="media-upload-button add-throw-button" onClick={addThrowRow}>
+              + Add Throw
+            </button>
+            {errors.detailed && <span className="error-text">{errors.detailed}</span>}
+            {throwRows.length > 0 && derived.bestMark > 0 && (
+              <div className="derived-summary">
+                {derived.throws} throws &middot; Best {formatDistance(derived.bestMark, distanceUnit)} &middot; Avg {formatDistance(derived.avgMark, distanceUnit)}
+                {countFouls(detailedThrows) > 0 ? ` · ${countFouls(detailedThrows)} foul${countFouls(detailedThrows) > 1 ? 's' : ''}` : ''}
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Placement (competition only) */}
         {sessionType === 'competition' && (
@@ -326,6 +455,29 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
           >
             &#128206; Add Photos/Videos
           </button>
+          {keptMedia.length > 0 && (
+            <div className="media-grid">
+              {keptMedia.map((m) => (
+                <div key={m.id} className="media-item">
+                  {m.type.startsWith('image/') && m.dataUrl ? (
+                    <img src={m.dataUrl} alt={m.name} className="media-thumbnail" />
+                  ) : (
+                    <div className="video-placeholder">
+                      <span className="video-icon">{m.type.startsWith('image/') ? '\u{1F5BC}\u{FE0F}' : '\u{1F3AC}'}</span>
+                      <span className="video-name">{m.name}</span>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    className="remove-media-button"
+                    onClick={() => removeKeptMedia(m.id)}
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           {mediaFiles.length > 0 && (
             <div className="media-grid">
               {mediaFiles.map((item, index) => (

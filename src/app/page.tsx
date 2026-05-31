@@ -22,6 +22,7 @@ import Onboarding from '@/components/Onboarding';
 import { AppLogo, DashboardIcon, ProfileIcon, LogIcon, HistoryIcon, ProgressIcon, SunIcon, MoonIcon } from '@/components/Icons';
 import { calculateStreak } from '@/lib/analytics';
 import { storage } from '@/lib/storage';
+import { deleteMedia } from '@/lib/media-storage';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
@@ -133,8 +134,13 @@ export default function Home() {
   }, []);
 
   const handleDeleteSession = useCallback((id: string) => {
+    // Free any IndexedDB-stored media so deleted sessions don't orphan blobs.
+    const session = sessions.find((s) => s.id === id);
+    session?.media?.forEach((m) => {
+      if (m.indexedDbKey) deleteMedia(m.indexedDbKey).catch(() => {});
+    });
     deleteSession(id);
-  }, [deleteSession]);
+  }, [sessions, deleteSession]);
 
   const handleCancelEdit = useCallback(() => {
     setEditSession(null);

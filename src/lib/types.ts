@@ -7,13 +7,22 @@ export interface ThrowingEvent {
   svg: string;
 }
 
+export interface ThrowEntry {
+  mark: number;        // canonical meters; ignored when foul
+  sector?: number;     // landing sector angle (deg), optional
+  feel?: number;       // per-throw RPE 1-10, optional
+  foul: boolean;
+  wind?: number;       // m/s, +tailwind / -headwind, optional
+}
+
 export interface Session {
   id: string;
   date: string;
   event: string;
   sessionType: 'training' | 'competition';
   rpe: number;
-  throws: number;
+  throws: number;            // count (auto-derived from throwLog when present)
+  throwLog?: ThrowEntry[];   // optional throw-by-throw detail (W5+)
   implementWeight: number;
   weightUnit: 'kg' | 'lbs';
   bestMark: number;

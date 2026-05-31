@@ -23,6 +23,7 @@ import { AppLogo, DashboardIcon, ProfileIcon, LogIcon, HistoryIcon, ProgressIcon
 import { calculateStreak } from '@/lib/analytics';
 import { storage } from '@/lib/storage';
 import { deleteMedia } from '@/lib/media-storage';
+import { loadSampleData } from '@/lib/seed';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
@@ -151,6 +152,12 @@ export default function Home() {
     reloadSessions();
   }, [reloadSessions]);
 
+  const handleLoadSample = useCallback(() => {
+    loadSampleData();
+    reloadSessions();
+    setActiveTab('dashboard');
+  }, [reloadSessions]);
+
   const handleNavigate = useCallback((tab: TabId) => {
     setActiveTab(tab);
   }, []);
@@ -242,6 +249,7 @@ export default function Home() {
             profile={profile}
             onNavigate={handleNavigate}
             onStartMeetDay={() => setShowMeetDay(true)}
+            onLoadSample={handleLoadSample}
           />
         )}
         {activeTab === 'profile' && (

@@ -5,6 +5,8 @@ import { Profile } from '@/lib/types';
 import type { DistanceUnit } from '@/lib/units';
 import { EVENTS, HEIGHT_UNITS, WEIGHT_UNITS, DISTANCE_UNITS } from '@/lib/constants';
 import { exportToJSON, exportToCSV, importFromJSON } from '@/lib/export';
+import { loadSampleData } from '@/lib/seed';
+import { storage } from '@/lib/storage';
 
 interface ProfileTabProps {
   profile: Profile;
@@ -26,6 +28,7 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
   const [distanceUnit, setDistanceUnit] = useState<DistanceUnit>(profile.distanceUnit ?? 'm');
   const [saveMsg, setSaveMsg] = useState('');
   const [importMsg, setImportMsg] = useState('');
+  const [seedMsg, setSeedMsg] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSave = () => {
@@ -82,6 +85,22 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
     };
     reader.readAsText(file);
     e.target.value = '';
+  };
+
+  const handleLoadSample = () => {
+    const existing = storage.getSessions();
+    if (
+      existing.length > 0 &&
+      !window.confirm(
+        `You already have ${existing.length} session(s). Add the sample training block on top? Your existing data is kept.`,
+      )
+    ) {
+      return;
+    }
+    const added = loadSampleData();
+    onDataImported();
+    setSeedMsg(`✓ Added ${added} sample sessions`);
+    setTimeout(() => setSeedMsg(''), 2500);
   };
 
   return (
@@ -255,6 +274,9 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
             <button className="secondary-button" onClick={() => fileInputRef.current?.click()}>
               Import Data
             </button>
+            <button className="secondary-button" onClick={handleLoadSample}>
+              Load Sample Data
+            </button>
             <input
               ref={fileInputRef}
               type="file"
@@ -264,6 +286,7 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
             />
           </div>
           {importMsg && <p className="import-msg">{importMsg}</p>}
+          {seedMsg && <p className="import-msg">{seedMsg}</p>}
         </div>
       </div>
     </div>

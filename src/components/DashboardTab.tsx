@@ -7,15 +7,17 @@ import { calculateStreak, getWeeklyStats } from '@/lib/analytics';
 import { calculatePersonalBests, getCurrentSeasonBests } from '@/lib/personal-bests';
 import { shouldShowBackupReminder } from '@/lib/export';
 import AchievementBadges from '@/components/AchievementBadges';
+import EmptyState from '@/components/EmptyState';
 
 interface DashboardTabProps {
   sessions: Session[];
   profile: Profile;
   onNavigate: (tab: TabId) => void;
   onStartMeetDay?: () => void;
+  onLoadSample?: () => void;
 }
 
-export default function DashboardTab({ sessions, profile, onNavigate, onStartMeetDay }: DashboardTabProps) {
+export default function DashboardTab({ sessions, profile, onNavigate, onStartMeetDay, onLoadSample }: DashboardTabProps) {
   const distanceUnit = profile.distanceUnit ?? 'm';
   const streak = calculateStreak(sessions);
   const weeklyStats = getWeeklyStats(sessions);
@@ -33,6 +35,28 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
 
   const allTimePBs = calculatePersonalBests(sessions);
   const seasonPBs = getCurrentSeasonBests(sessions);
+
+  if (sessions.length === 0) {
+    return (
+      <div className="tab-content" id="tab-dashboard">
+        <h2 className="tab-title">Dashboard</h2>
+        {!hasProfile && (
+          <div className="reminder">
+            <span>&#128161;</span>
+            <span>Complete your profile to get the most out of the app</span>
+          </div>
+        )}
+        <EmptyState
+          title="Let's log your first throw"
+          text="Track every mark, foul, RPE and video — your PRs, streak and progress build automatically."
+          actionLabel="+ Log a session"
+          onAction={() => onNavigate('log')}
+          secondaryLabel={onLoadSample ? 'Load sample data' : undefined}
+          onSecondary={onLoadSample}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="tab-content" id="tab-dashboard">

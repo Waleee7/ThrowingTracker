@@ -7,6 +7,7 @@ import { getWeeklyStats, getMonthlyStats } from '@/lib/analytics';
 import { formatDistance, formatWeight, type DistanceUnit } from '@/lib/units';
 import { countFouls } from '@/lib/throws';
 import SessionMedia from './SessionMedia';
+import EmptyState from './EmptyState';
 
 interface HistoryTabProps {
   sessions: Session[];
@@ -67,10 +68,11 @@ function RecentView({
   if (sorted.length === 0) {
     return (
       <div className="history-list">
-        <div className="empty-state">
-          <span className="empty-icon">&#128221;</span>
-          <p className="empty-text">No sessions yet</p>
-        </div>
+        <EmptyState
+          icon={'\u{1F4DD}'}
+          title="No sessions yet"
+          text="Your logged throws and meets will show up here."
+        />
       </div>
     );
   }

@@ -1,11 +1,7 @@
 'use client';
 
+// Solid-white theme: background decoration removed. Kept as a no-op so the
+// mounts in page.tsx stay valid and the mesh can be revived later if wanted.
 export default function FloatingElements() {
-  return (
-    <div className="floating-container">
-      <div className="floating-orb floating-orb-1" />
-      <div className="floating-orb floating-orb-2" />
-      <div className="floating-orb floating-orb-3" />
-    </div>
-  );
+  return null;
 }

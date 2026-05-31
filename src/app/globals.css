@@ -16,11 +16,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: #000000;
   
-  background-image: url('/background.jpg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-color: #e9edfb;
   min-height: 100vh;
 }
 
@@ -55,8 +51,8 @@ body {
 
 .app {
   min-height: 100vh;
-  /* UPDATED: reduced from 0.7 to 0.15 so background image shows through */
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+  /* Subtle mesh base — soft near-solid; orbs (FloatingElements) supply the color glow */
+  background: linear-gradient(160deg, #f6f8fe 0%, #eef1fb 55%, #f3effc 100%);
   display: flex;
   flex-direction: column;
   max-width: 100vw;
@@ -70,8 +66,12 @@ body {
 
 .dark .app,
 .dark-mode {
-  /* UPDATED: reduced from 0.85 to 0.25 */
-  background: linear-gradient(135deg, rgba(26, 26, 46, 0.25) 0%, rgba(22, 33, 62, 0.25) 100%);
+  /* Subtle mesh base — deep slate; orbs supply the color glow */
+  background: linear-gradient(160deg, #0f1117 0%, #141726 55%, #161228 100%);
+}
+
+.dark body {
+  background-color: #0f1117;
 }
 
 .dark .main,
@@ -220,50 +220,32 @@ body {
 .floating-orb {
   position: absolute;
   border-radius: 50%;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
 }
 
+/* Static mesh-gradient blobs: purple + teal + violet glow, bleeding off the edges.
+   They sit behind the frosted cards (backdrop-filter blurs them) for a mesh-glass look. */
 .floating-orb-1 {
-  top: 10%;
-  left: 10%;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-  animation: float1 8s ease-in-out infinite;
+  top: -8%;
+  left: -6%;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.30) 0%, rgba(102, 126, 234, 0) 70%);
 }
 
 .floating-orb-2 {
-  top: 60%;
-  right: 15%;
-  width: 150px;
-  height: 150px;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-  animation: float2 10s ease-in-out infinite 1s;
+  bottom: -10%;
+  right: -8%;
+  width: 540px;
+  height: 540px;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.22) 0%, rgba(45, 212, 191, 0) 70%);
 }
 
 .floating-orb-3 {
-  bottom: 20%;
-  left: 20%;
-  width: 80px;
-  height: 80px;
-  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%);
-  animation: float3 7s ease-in-out infinite 2s;
-}
-
-@keyframes float1 {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(20px, -30px) rotate(10deg); }
-}
-
-@keyframes float2 {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(-25px, 40px) rotate(-15deg); }
-}
-
-@keyframes float3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(15px, -20px) scale(1.1); }
+  top: 32%;
+  left: 42%;
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(118, 75, 162, 0.18) 0%, rgba(118, 75, 162, 0) 70%);
 }
 
 /* ============================================================================

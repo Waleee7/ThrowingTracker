@@ -14,6 +14,7 @@ interface SectorMapProps {
   colorMode?: 'default' | 'heatmap';
   overlayPoints?: LandingPoint[][];
   overlayColors?: string[];
+  hideList?: boolean; // suppress the built-in points list (parent manages its own)
 }
 
 const SECTOR_ANGLE = 34.92;
@@ -33,6 +34,7 @@ export default function SectorMap({
   colorMode = 'default',
   overlayPoints,
   overlayColors,
+  hideList = false,
 }: SectorMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [depth, setDepth] = useState(sectorDepth);
@@ -200,7 +202,7 @@ export default function SectorMap({
         className="sector-canvas"
         style={{ cursor: readOnly ? 'default' : 'crosshair' }}
       />
-      {points.length > 0 && !readOnly && (
+      {points.length > 0 && !readOnly && !hideList && (
         <div className="landing-points-list">
           {points.map((p, i) => (
             <div key={i} className="landing-point-item">

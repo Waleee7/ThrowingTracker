@@ -1,12 +1,16 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Session, Profile, SessionType, MediaAttachment, ThrowEntry } from '@/lib/types';
+import { Session, Profile, SessionType, MediaAttachment, ThrowEntry, LandingPoint } from '@/lib/types';
 import { EVENTS, RPE_SCALE } from '@/lib/constants';
 import { toLocalDateKey } from '@/lib/dates';
 import { formatDistance, parseDistanceToMeters } from '@/lib/units';
 import { storeMedia, deleteMedia } from '@/lib/media-storage';
 import { deriveSessionMetrics, countFouls } from '@/lib/throws';
+import { windSensitive, windAdjustedMeters } from '@/lib/wind';
+import { parseSpokenThrow } from '@/lib/speech';
+import { useVoiceCapture } from '@/hooks/useVoiceCapture';
+import SectorMap from './SectorMap';
 
 interface LogTabProps {
   profile: Profile;
@@ -14,6 +18,17 @@ interface LogTabProps {
   editSession?: Session | null;
   onCancelEdit?: () => void;
 }
+
+interface ThrowRow {
+  mark: string;
+  foul: boolean;
+  landing?: LandingPoint; // present when logged by tapping the sector map
+  sector?: number; // signed angle from centerline (deg): left negative, right positive
+}
+
+// Mirror SectorMap geometry so we can derive a sector angle from a tapped point.
+const SECTOR_CX = 175; // CANVAS_WIDTH / 2
+const SECTOR_CY = 360; // CIRCLE_Y
 
 export default function LogTab({ profile, onSave, editSession, onCancelEdit }: LogTabProps) {
   const isEditing = !!editSession;
@@ -44,21 +59,56 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
   const [keptMedia, setKeptMedia] = useState<MediaAttachment[]>(editSession?.media ?? []);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Optional throw-by-throw log (W5). When on, it is the source of truth for
-  // throws/best/avg (fouls count as attempts but are excluded from best+avg).
-  // Marks are entered in the chosen display unit and stored as canonical meters.
+  // Rapid throw-by-throw log (W5/W6). When on, it is the source of truth for
+  // throws/best/avg (fouls count as attempts but are excluded from best+avg) and
+  // also produces landingZone points (sector map) + per-throw sector + wind.
   const [useDetailed, setUseDetailed] = useState<boolean>((editSession?.throwLog?.length ?? 0) > 0);
-  const [throwRows, setThrowRows] = useState<Array<{ mark: string; foul: boolean }>>(
-    editSession?.throwLog?.map((t) => ({ mark: t.foul ? '' : markToInput(t.mark), foul: t.foul })) ?? []
-  );
+  const [throwRows, setThrowRows] = useState<ThrowRow[]>(() => {
+    const logs = editSession?.throwLog;
+    if (!logs) return [];
+    const lz = editSession?.landingZone ?? [];
+    return logs.map((t, i) => ({
+      mark: t.foul ? '' : markToInput(t.mark),
+      foul: t.foul,
+      sector: t.sector,
+      landing: lz.find((p) => p.throwIndex === i),
+    }));
+  });
+  const [wind, setWind] = useState<string>(() => {
+    const w = editSession?.throwLog?.find((t) => typeof t.wind === 'number')?.wind;
+    return typeof w === 'number' ? String(w) : '';
+  });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleVoiceText = (text: string) => {
+    const { foul, value } = parseSpokenThrow(text);
+    if (foul) {
+      setThrowRows((prev) => [...prev, { mark: '', foul: true }]);
+      setErrors((p) => ({ ...p, detailed: '' }));
+    } else if (value) {
+      setThrowRows((prev) => [...prev, { mark: value, foul: false }]);
+      setErrors((p) => ({ ...p, detailed: '' }));
+    }
+  };
+  const voice = useVoiceCapture(handleVoiceText);
+
+  const windNum = parseFloat(wind);
+  const hasWind = isFinite(windNum);
   const detailedThrows: ThrowEntry[] = throwRows.map((r) => ({
     mark: r.foul ? 0 : parseDistanceToMeters(r.mark, distanceUnit),
     foul: r.foul,
+    sector: r.sector,
+    wind: hasWind ? windNum : undefined,
   }));
   const derived = deriveSessionMetrics(detailedThrows);
+
+  const landingPoints: LandingPoint[] = throwRows
+    .map((r, i): LandingPoint | null => (r.landing ? { ...r.landing, throwIndex: i } : null))
+    .filter((p): p is LandingPoint => p !== null);
+
+  const sectorDepthDefault =
+    event === 'javelin' ? 90 : event === 'discus' || event === 'hammer' ? 70 : 25;
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -145,6 +195,7 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
         rpe,
         throws: useDetailed ? derived.throws : parseInt(throws),
         throwLog: useDetailed ? detailedThrows : undefined,
+        landingZone: useDetailed ? (landingPoints.length ? landingPoints : undefined) : editSession?.landingZone,
         implementWeight: parseFloat(weight),
         weightUnit: weightUnit as 'kg' | 'lbs',
         bestMark: useDetailed ? derived.bestMark : parseDistanceToMeters(bestMark, distanceUnit),
@@ -182,8 +233,19 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
   // handleSubmit) so cancelling an edit never loses media.
   const removeKeptMedia = (id: string) => setKeptMedia((prev) => prev.filter((m) => m.id !== id));
 
-  const addThrowRow = () => setThrowRows((prev) => [...prev, { mark: '', foul: false }]);
-  const updateThrowRow = (i: number, patch: Partial<{ mark: string; foul: boolean }>) =>
+  const addManualThrow = () => setThrowRows((prev) => [...prev, { mark: '', foul: false }]);
+  const addFoulThrow = () => {
+    setThrowRows((prev) => [...prev, { mark: '', foul: true }]);
+    setErrors((p) => ({ ...p, detailed: '' }));
+  };
+  const addLandingThrow = (point: LandingPoint) => {
+    const dx = point.x - SECTOR_CX;
+    const dy = SECTOR_CY - point.y;
+    const sector = Math.round(Math.atan2(dx, dy) * (180 / Math.PI) * 10) / 10;
+    setThrowRows((prev) => [...prev, { mark: markToInput(point.distance), foul: false, landing: point, sector }]);
+    setErrors((p) => ({ ...p, detailed: '' }));
+  };
+  const updateThrowRow = (i: number, patch: Partial<ThrowRow>) =>
     setThrowRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
   const removeThrowRow = (i: number) => setThrowRows((prev) => prev.filter((_, idx) => idx !== i));
 
@@ -307,13 +369,11 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
               type="checkbox"
               checked={useDetailed}
               onChange={(e) => {
-                const on = e.target.checked;
-                setUseDetailed(on);
-                if (on && throwRows.length === 0) setThrowRows([{ mark: '', foul: false }]);
+                setUseDetailed(e.target.checked);
                 setErrors((prev) => ({ ...prev, detailed: '', throws: '', best: '', avg: '' }));
               }}
             />
-            <span>Log each throw (marks &amp; fouls)</span>
+            <span>Rapid log — tap, speak, or type each throw</span>
           </label>
         </div>
 
@@ -365,9 +425,54 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
             </div>
           </>
         ) : (
-          /* Throw-by-throw log */
+          /* Rapid throw-by-throw log (W6): sector tap + voice + manual, with wind */
           <div className="form-group">
             <label className="label">Throws</label>
+
+            {windSensitive(event) && (
+              <div className="wind-row">
+                <span className="wind-label">Wind</span>
+                <input
+                  type="number"
+                  step="0.1"
+                  inputMode="decimal"
+                  className="input-small wind-input"
+                  value={wind}
+                  onChange={(e) => setWind(e.target.value)}
+                  placeholder="-2.0"
+                />
+                <span className="wind-hint">m/s · +tail / −head</span>
+              </div>
+            )}
+
+            <SectorMap
+              key={event || 'na'}
+              sectorDepth={sectorDepthDefault}
+              distanceUnit={distanceUnit}
+              points={landingPoints}
+              onAddPoint={addLandingThrow}
+              hideList
+            />
+            <p className="sector-hint">Tap the sector to log where a throw lands — distance is read from the tap.</p>
+
+            <div className="rapid-actions">
+              {voice.supported && (
+                <button
+                  type="button"
+                  className={`voice-button${voice.listening ? ' listening' : ''}`}
+                  onClick={() => (voice.listening ? voice.stop() : voice.start())}
+                >
+                  {voice.listening ? '● Listening…' : '🎤 Voice'}
+                </button>
+              )}
+              <button type="button" className="secondary-button rapid-manual" onClick={addManualThrow}>
+                + Manual
+              </button>
+              <button type="button" className="foul-add-button" onClick={addFoulThrow}>
+                + Foul
+              </button>
+            </div>
+
             {throwRows.length > 0 && (
               <div className="throw-rows">
                 {throwRows.map((r, i) => (
@@ -380,13 +485,16 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
                       className="input throw-mark-input"
                       value={r.foul ? '' : r.mark}
                       disabled={r.foul}
-                      onChange={(e) => { updateThrowRow(i, { mark: e.target.value }); setErrors((prev) => ({ ...prev, detailed: '' })); }}
+                      onChange={(e) => { updateThrowRow(i, { mark: e.target.value }); setErrors((p) => ({ ...p, detailed: '' })); }}
                       placeholder={r.foul ? 'Foul' : distanceUnit === 'ft' ? `199' 6"` : '15.50'}
                     />
+                    {typeof r.sector === 'number' && !r.foul && (
+                      <span className="sector-chip">{r.sector < 0 ? 'L' : 'R'}{Math.abs(Math.round(r.sector))}&deg;</span>
+                    )}
                     <button
                       type="button"
                       className={`foul-toggle${r.foul ? ' active' : ''}`}
-                      onClick={() => { updateThrowRow(i, { foul: !r.foul }); setErrors((prev) => ({ ...prev, detailed: '' })); }}
+                      onClick={() => { updateThrowRow(i, { foul: !r.foul }); setErrors((p) => ({ ...p, detailed: '' })); }}
                       title="Mark as foul"
                     >
                       Foul
@@ -398,14 +506,16 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
                 ))}
               </div>
             )}
-            <button type="button" className="media-upload-button add-throw-button" onClick={addThrowRow}>
-              + Add Throw
-            </button>
+
             {errors.detailed && <span className="error-text">{errors.detailed}</span>}
+
             {throwRows.length > 0 && derived.bestMark > 0 && (
               <div className="derived-summary">
                 {derived.throws} throws &middot; Best {formatDistance(derived.bestMark, distanceUnit)} &middot; Avg {formatDistance(derived.avgMark, distanceUnit)}
                 {countFouls(detailedThrows) > 0 ? ` · ${countFouls(detailedThrows)} foul${countFouls(detailedThrows) > 1 ? 's' : ''}` : ''}
+                {windSensitive(event) && hasWind && windNum !== 0 && (
+                  <span className="wind-adj"> &middot; still-air est. {formatDistance(windAdjustedMeters(derived.bestMark, windNum, event), distanceUnit)}</span>
+                )}
               </div>
             )}
           </div>

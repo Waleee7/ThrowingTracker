@@ -1671,6 +1671,125 @@ body {
   margin-top: 4px;
 }
 
+/* Rapid log (W6): wind, sector tap, voice */
+.wind-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.wind-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.wind-input {
+  max-width: 90px;
+  flex: 0 0 auto;
+}
+
+.wind-hint,
+.sector-hint {
+  font-size: 12px;
+  color: #999;
+}
+
+.sector-hint {
+  text-align: center;
+  margin: 6px 0 12px;
+}
+
+.rapid-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.rapid-actions .secondary-button,
+.rapid-actions .voice-button,
+.rapid-actions .foul-add-button {
+  flex: 1;
+  min-width: 90px;
+}
+
+.voice-button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 2px solid rgba(102, 126, 234, 0.4);
+  background: rgba(102, 126, 234, 0.08);
+  color: #667eea;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.voice-button:hover {
+  background: rgba(102, 126, 234, 0.16);
+}
+
+.voice-button.listening {
+  background: #ff3b30;
+  border-color: #ff3b30;
+  color: #fff;
+  animation: voicePulse 1.2s ease-in-out infinite;
+}
+
+@keyframes voicePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+
+.foul-add-button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 59, 48, 0.4);
+  background: rgba(255, 59, 48, 0.06);
+  color: #ff3b30;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.foul-add-button:hover {
+  background: rgba(255, 59, 48, 0.14);
+}
+
+.sector-chip {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  background: rgba(102, 126, 234, 0.12);
+  color: #667eea;
+}
+
+.wind-adj {
+  color: #667eea;
+}
+
+.dark .voice-button,
+.dark-mode .voice-button {
+  background: rgba(102, 126, 234, 0.18);
+  color: #a3b3ff;
+}
+
+.dark .sector-chip,
+.dark-mode .sector-chip {
+  background: rgba(102, 126, 234, 0.2);
+  color: #a3b3ff;
+}
+
+.dark .wind-hint,
+.dark-mode .wind-hint,
+.dark .sector-hint,
+.dark-mode .sector-hint {
+  color: #8888aa;
+}
+
 /* ============================================================================
    DATA MANAGEMENT
    ============================================================================ */

@@ -63,6 +63,13 @@ export const storage = {
     set(SCHEMA_VERSION_KEY, SCHEMA_VERSION);
   },
 
+  clearAll: () => {
+    if (typeof window === 'undefined') return;
+    [PROFILE_KEY, SESSIONS_KEY, LAST_EXPORT_KEY, DARK_MODE_KEY, SCHEMA_VERSION_KEY].forEach((k) =>
+      localStorage.removeItem(k),
+    );
+  },
+
   getStorageUsage: (): { used: number; available: number } => {
     if (typeof window === 'undefined') return { used: 0, available: 0 };
     let used = 0;

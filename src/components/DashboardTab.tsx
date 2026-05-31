@@ -8,6 +8,7 @@ import { calculatePersonalBests, getCurrentSeasonBests } from '@/lib/personal-be
 import { shouldShowBackupReminder } from '@/lib/export';
 import AchievementBadges from '@/components/AchievementBadges';
 import EmptyState from '@/components/EmptyState';
+import ReadinessCard from '@/components/ReadinessCard';
 
 interface DashboardTabProps {
   sessions: Session[];
@@ -94,6 +95,12 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
           <div className="stat-value">{weeklyStats.avgRPE || '\u2014'}</div>
           <div className="stat-label">Avg RPE</div>
         </div>
+      </div>
+
+      {/* Readiness */}
+      <div className="readiness-section">
+        <h3 className="section-title">Readiness</h3>
+        <ReadinessCard sessions={sessions} />
       </div>
 
       {/* Personal Bests */}

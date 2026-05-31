@@ -7,6 +7,7 @@ import { EVENTS, HEIGHT_UNITS, WEIGHT_UNITS, DISTANCE_UNITS } from '@/lib/consta
 import { exportToJSON, exportToCSV, importFromJSON } from '@/lib/export';
 import { loadSampleData } from '@/lib/seed';
 import { storage } from '@/lib/storage';
+import { clearAllMedia } from '@/lib/media-storage';
 
 interface ProfileTabProps {
   profile: Profile;
@@ -50,7 +51,7 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
       distanceUnit,
     };
     onSave(newProfile);
-    setSaveMsg('\u2713 Saved');
+    setSaveMsg('✓ Saved');
     setTimeout(() => setSaveMsg(''), 2000);
   };
 
@@ -103,11 +104,46 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
     setTimeout(() => setSeedMsg(''), 2500);
   };
 
+  const handleLogout = async () => {
+    if (
+      !window.confirm(
+        'Log out and clear ALL data on this device? This removes your profile, sessions, and videos and returns you to setup. This cannot be undone.',
+      )
+    ) {
+      return;
+    }
+    storage.clearAll();
+    try {
+      await clearAllMedia();
+    } catch {
+      // proceed with the reset regardless of media-clear errors
+    }
+    window.location.reload();
+  };
+
+  const initials =
+    name.trim().split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase() || '+';
+  const eventCount = events.length;
+
   return (
     <div className="tab-content" id="tab-profile">
-      <h2 className="tab-title">Profile</h2>
-      <div className="form">
-        {/* Name */}
+      {/* Header */}
+      <div className="profile-header">
+        <div className="profile-avatar">{initials}</div>
+        <div className="profile-header-info">
+          <div className="profile-name">{name.trim() || 'Your Profile'}</div>
+          <div className="profile-sub">
+            {eventCount > 0 ? `${eventCount} event${eventCount > 1 ? 's' : ''}` : 'No events yet'}
+            {' · '}
+            {distanceUnit === 'ft' ? 'ft / in' : 'meters'}
+          </div>
+        </div>
+      </div>
+
+      {/* Athlete */}
+      <section className="profile-section">
+        <h3 className="profile-section-title">Athlete</h3>
+
         <div className="form-group">
           <label className="label">Name</label>
           <input
@@ -119,7 +155,6 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
           />
         </div>
 
-        {/* Height & Weight Row */}
         <div className="form-row">
           <div className="form-group">
             <label className="label">Height</label>
@@ -187,7 +222,6 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
           </div>
         </div>
 
-        {/* Sex */}
         <div className="form-group">
           <label className="label">Sex</label>
           <div className="radio-group">
@@ -205,8 +239,11 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Distance display unit */}
+      {/* Preferences */}
+      <section className="profile-section">
+        <h3 className="profile-section-title">Preferences</h3>
         <div className="form-group">
           <label className="label">Distance Unit</label>
           <div className="toggle-group">
@@ -222,73 +259,70 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Events */}
-        <div className="form-group">
-          <label className="label">Events</label>
-          <div className="event-grid">
-            {EVENTS.map((event) => (
-              <button
-                key={event.id}
-                type="button"
-                className={`event-button${events.includes(event.id) ? ' active' : ''}`}
-                onClick={() => toggleEvent(event.id)}
-              >
-                <div
-                  className="event-icon"
-                  dangerouslySetInnerHTML={{ __html: event.svg }}
-                />
-                <span className="event-name">{event.name}</span>
-              </button>
-            ))}
-          </div>
+      {/* Events */}
+      <section className="profile-section">
+        <h3 className="profile-section-title">Events</h3>
+        <div className="event-grid">
+          {EVENTS.map((event) => (
+            <button
+              key={event.id}
+              type="button"
+              className={`event-button${events.includes(event.id) ? ' active' : ''}`}
+              onClick={() => toggleEvent(event.id)}
+            >
+              <div
+                className="event-icon"
+                dangerouslySetInnerHTML={{ __html: event.svg }}
+              />
+              <span className="event-name">{event.name}</span>
+            </button>
+          ))}
         </div>
+      </section>
 
-        {/* Notes */}
-        <div className="form-group">
-          <label className="label">Notes</label>
-          <textarea
-            className="textarea"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Goals, injuries, training notes..."
-            rows={3}
+      {/* Notes */}
+      <section className="profile-section">
+        <h3 className="profile-section-title">Notes</h3>
+        <textarea
+          className="textarea"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Goals, injuries, training notes..."
+          rows={3}
+        />
+      </section>
+
+      {/* Save */}
+      <button className="primary-button profile-save" onClick={handleSave}>
+        {saveMsg || 'Save Profile'}
+      </button>
+
+      {/* Data & Account */}
+      <section className="profile-section">
+        <h3 className="profile-section-title">Data &amp; Account</h3>
+        <div className="data-buttons">
+          <button className="secondary-button" onClick={exportToJSON}>Export JSON</button>
+          <button className="secondary-button" onClick={exportToCSV}>Export CSV</button>
+          <button className="secondary-button" onClick={() => fileInputRef.current?.click()}>Import Data</button>
+          <button className="secondary-button" onClick={handleLoadSample}>Load Sample Data</button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: 'none' }}
+            onChange={handleImport}
           />
         </div>
+        {importMsg && <p className="import-msg">{importMsg}</p>}
+        {seedMsg && <p className="import-msg">{seedMsg}</p>}
 
-        {/* Save Button */}
-        <button className="primary-button" onClick={handleSave}>
-          {saveMsg || 'Save Profile'}
-        </button>
-
-        {/* Data Management */}
-        <div className="data-section">
-          <h3 className="section-title">Data Management</h3>
-          <div className="data-buttons">
-            <button className="secondary-button" onClick={exportToJSON}>
-              Export JSON
-            </button>
-            <button className="secondary-button" onClick={exportToCSV}>
-              Export CSV
-            </button>
-            <button className="secondary-button" onClick={() => fileInputRef.current?.click()}>
-              Import Data
-            </button>
-            <button className="secondary-button" onClick={handleLoadSample}>
-              Load Sample Data
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              style={{ display: 'none' }}
-              onChange={handleImport}
-            />
-          </div>
-          {importMsg && <p className="import-msg">{importMsg}</p>}
-          {seedMsg && <p className="import-msg">{seedMsg}</p>}
+        <div className="danger-zone">
+          <button className="logout-button" onClick={handleLogout}>Log Out &amp; Reset</button>
+          <p className="danger-hint">Clears all data on this device and returns to setup.</p>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

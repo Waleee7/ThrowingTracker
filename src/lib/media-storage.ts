@@ -69,6 +69,16 @@ export async function deleteMedia(key: string): Promise<void> {
   });
 }
 
+export async function clearAllMedia(): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
 export async function getStorageEstimate(): Promise<{ used: number; quota: number }> {
   if ('storage' in navigator && 'estimate' in navigator.storage) {
     const estimate = await navigator.storage.estimate();

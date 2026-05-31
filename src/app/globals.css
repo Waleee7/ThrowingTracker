@@ -1205,6 +1205,206 @@ body {
 }
 
 /* ============================================================================
+   PROFILE (redesigned layout)
+   ============================================================================ */
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.profile-avatar {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+}
+
+.profile-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1.2;
+}
+
+.profile-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  margin-top: 3px;
+}
+
+.profile-section {
+  background: #ffffff;
+  border: 1px solid rgba(102, 126, 234, 0.14);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
+}
+
+.profile-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #667eea;
+  margin: 0 0 14px;
+}
+
+.profile-save {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.danger-zone {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.logout-button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 59, 48, 0.5);
+  background: rgba(255, 59, 48, 0.06);
+  color: #ff3b30;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.logout-button:hover {
+  background: #ff3b30;
+  color: #fff;
+}
+
+.danger-hint {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.dark .profile-section,
+.dark-mode .profile-section {
+  background: rgba(30, 30, 50, 0.65);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.dark .profile-name,
+.dark-mode .profile-name {
+  color: #e0e0e0;
+}
+
+.dark .profile-sub,
+.dark-mode .profile-sub,
+.dark .danger-hint,
+.dark-mode .danger-hint {
+  color: #8888aa;
+}
+
+.dark .danger-zone,
+.dark-mode .danger-zone {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================
+   READINESS (W6)
+   ============================================================================ */
+
+.readiness-section {
+  margin-bottom: 24px;
+}
+
+.readiness-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(102, 126, 234, 0.14);
+  border-left: 4px solid #c7c7cc;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
+}
+
+.readiness-score-wrap {
+  display: flex;
+  align-items: baseline;
+  flex: 0 0 auto;
+  min-width: 64px;
+}
+
+.readiness-score {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.readiness-max {
+  font-size: 13px;
+  color: #999;
+  margin-left: 2px;
+}
+
+.readiness-label {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.readiness-factor {
+  font-size: 13px;
+  color: #777;
+  margin-top: 3px;
+  line-height: 1.3;
+}
+
+.readiness-good { border-left-color: #34c759; }
+.readiness-good .readiness-score,
+.readiness-good .readiness-label { color: #34c759; }
+
+.readiness-ok { border-left-color: #667eea; }
+.readiness-ok .readiness-score,
+.readiness-ok .readiness-label { color: #667eea; }
+
+.readiness-warn { border-left-color: #ff9500; }
+.readiness-warn .readiness-score,
+.readiness-warn .readiness-label { color: #ff9500; }
+
+.readiness-bad { border-left-color: #ff3b30; }
+.readiness-bad .readiness-score,
+.readiness-bad .readiness-label { color: #ff3b30; }
+
+.readiness-muted .readiness-score { color: #999; }
+
+.dark .readiness-card,
+.dark-mode .readiness-card {
+  background: rgba(30, 30, 50, 0.65);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.dark .readiness-factor,
+.dark-mode .readiness-factor,
+.dark .readiness-max,
+.dark-mode .readiness-max {
+  color: #8888aa;
+}
+
+/* ============================================================================
    MEDIA UPLOAD
    ============================================================================ */
 

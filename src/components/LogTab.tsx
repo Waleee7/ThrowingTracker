@@ -2,15 +2,18 @@
 
 import { useState, useRef } from 'react';
 import { Session, Profile, SessionType, MediaAttachment, ThrowEntry, LandingPoint } from '@/lib/types';
-import { EVENTS, RPE_SCALE } from '@/lib/constants';
+import { EVENTS, RPE_SCALE, RPE_EMOJI } from '@/lib/constants';
 import { toLocalDateKey } from '@/lib/dates';
 import { formatDistance, parseDistanceToMeters } from '@/lib/units';
 import { storeMedia, deleteMedia } from '@/lib/media-storage';
 import { deriveSessionMetrics, countFouls } from '@/lib/throws';
 import { windSensitive, windAdjustedMeters } from '@/lib/wind';
 import { parseSpokenThrow } from '@/lib/speech';
+import { suggestImplementKg } from '@/lib/implements';
+import { getEffectiveLevel } from '@/lib/athlete-level';
 import { useVoiceCapture } from '@/hooks/useVoiceCapture';
 import SectorMap from './SectorMap';
+import ImplementRegistry from './ImplementRegistry';
 
 interface LogTabProps {
   profile: Profile;
@@ -35,6 +38,11 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
   const today = toLocalDateKey();
   const distanceUnit = profile.distanceUnit ?? 'm';
 
+  // W7 tier UX: rookies get a friendlier, simpler surface (emoji RPE here).
+  const isRookie = getEffectiveLevel(profile) === 'rookie';
+  // Map a stored numeric RPE to its emoji bucket for highlighting.
+  const rpeBucket = (v: number) => RPE_EMOJI.find((r) => v <= r.value)?.value ?? 10;
+
   // Convert a stored canonical-meters value into the entry string for the chosen unit.
   const markToInput = (meters: number | undefined): string => {
     if (meters === undefined) return '';
@@ -54,6 +62,13 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
   const [placement, setPlacement] = useState(editSession?.placement || '');
   const [notes, setNotes] = useState(editSession?.notes || '');
   const [saving, setSaving] = useState(false);
+
+  const [showRegistry, setShowRegistry] = useState(false);
+
+  // Profile-aware standard implement for the selected event (W6 registry).
+  const suggestion = event ? suggestImplementKg(profile, event) : null;
+  const suggestionApplied =
+    suggestion !== null && weightUnit === 'kg' && parseFloat(weight) === suggestion.kg;
 
   const [mediaFiles, setMediaFiles] = useState<Array<{ name: string; type: string; url: string; file?: File }>>([]);
   const [keptMedia, setKeptMedia] = useState<MediaAttachment[]>(editSession?.media ?? []);
@@ -321,21 +336,37 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
           {errors.event && <span className="error-text">{errors.event}</span>}
         </div>
 
-        {/* RPE */}
+        {/* RPE — tier-adaptive (W7): rookies get emoji, others get the 1-10 scale */}
         <div className="form-group">
-          <label className="label">RPE (1-10)</label>
-          <div className="rpe-grid">
-            {RPE_SCALE.map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={`rpe-button${rpe === value ? ' active' : ''}`}
-                onClick={() => setRpe(value)}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
+          <label className="label">{isRookie ? 'How hard was it?' : 'RPE (1-10)'}</label>
+          {isRookie ? (
+            <div className="rpe-emoji-grid">
+              {RPE_EMOJI.map((r) => (
+                <button
+                  key={r.value}
+                  type="button"
+                  className={`rpe-emoji-button${rpeBucket(rpe) === r.value ? ' active' : ''}`}
+                  onClick={() => setRpe(r.value)}
+                >
+                  <span className="rpe-emoji">{r.emoji}</span>
+                  <span className="rpe-emoji-label">{r.label}</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="rpe-grid">
+              {RPE_SCALE.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={`rpe-button${rpe === value ? ' active' : ''}`}
+                  onClick={() => setRpe(value)}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Weight */}
@@ -360,22 +391,58 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
             </select>
           </div>
           {errors.weight && <span className="error-text">{errors.weight}</span>}
+
+          {/* Standard implement suggestion + catalog (W6 registry) */}
+          <div className="impl-suggest-row">
+            {suggestion && !suggestionApplied && (
+              <button
+                type="button"
+                className="impl-suggest-chip"
+                onClick={() => {
+                  setWeight(suggestion.kg.toString());
+                  setWeightUnit('kg');
+                  setErrors((prev) => ({ ...prev, weight: '' }));
+                }}
+              >
+                Use {suggestion.kg} kg · {suggestion.label}
+              </button>
+            )}
+            {suggestion && suggestionApplied && (
+              <span className="impl-suggest-ok">✓ {suggestion.label} weight</span>
+            )}
+            <button
+              type="button"
+              className="impl-toggle"
+              onClick={() => setShowRegistry((v) => !v)}
+            >
+              {showRegistry ? 'Hide' : 'Standard weights'}
+            </button>
+          </div>
+          {showRegistry && (
+            <ImplementRegistry
+              event={event || undefined}
+              highlightGrade={profile.grade}
+              highlightSex={profile.sex}
+            />
+          )}
         </div>
 
-        {/* Detailed throw-log toggle */}
-        <div className="form-group">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={useDetailed}
-              onChange={(e) => {
-                setUseDetailed(e.target.checked);
-                setErrors((prev) => ({ ...prev, detailed: '', throws: '', best: '', avg: '' }));
-              }}
-            />
-            <span>Rapid log — tap, speak, or type each throw</span>
-          </label>
-        </div>
+        {/* Detailed throw-log toggle — advanced, hidden for rookies (W7 gating) */}
+        {!isRookie && (
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={useDetailed}
+                onChange={(e) => {
+                  setUseDetailed(e.target.checked);
+                  setErrors((prev) => ({ ...prev, detailed: '', throws: '', best: '', avg: '' }));
+                }}
+              />
+              <span>Rapid log — tap, speak, or type each throw</span>
+            </label>
+          </div>
+        )}
 
         {!useDetailed ? (
           <>

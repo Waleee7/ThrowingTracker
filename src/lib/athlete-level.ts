@@ -52,7 +52,7 @@ const GRADE_TO_BASE_LEVEL: Record<GradeLevel, AthleteLevel> = {
   post_collegiate: 'elite',
 };
 
-interface ImplementRule {
+export interface ImplementRule {
   grade: GradeLevel;
   sex: 'M' | 'F';
   weightKg: number;
@@ -135,7 +135,7 @@ const JAVELIN_IMPLEMENTS: ImplementRule[] = [
   { grade: 'post_collegiate', sex: 'F', weightKg: 0.6 },
 ];
 
-const IMPLEMENT_TABLE: Record<EventId, ImplementRule[]> = {
+export const IMPLEMENT_TABLE: Record<EventId, ImplementRule[]> = {
   'shot-put': SHOT_PUT_IMPLEMENTS,
   discus: DISCUS_IMPLEMENTS,
   hammer: HAMMER_IMPLEMENTS,

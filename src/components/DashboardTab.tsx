@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Session, Profile, PersonalBest, TabId } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
 import { formatDistance, type DistanceUnit } from '@/lib/units';
@@ -15,24 +16,39 @@ interface DashboardTabProps {
   profile: Profile;
   onNavigate: (tab: TabId) => void;
   onStartMeetDay?: () => void;
+  onStartWrapped?: () => void;
   onLoadSample?: () => void;
 }
 
-export default function DashboardTab({ sessions, profile, onNavigate, onStartMeetDay, onLoadSample }: DashboardTabProps) {
+export default function DashboardTab({ sessions, profile, onNavigate, onStartMeetDay, onStartWrapped, onLoadSample }: DashboardTabProps) {
+  const [view, setView] = useState<'today' | 'records'>('today');
   const distanceUnit = profile.distanceUnit ?? 'm';
   const streak = calculateStreak(sessions);
   const weeklyStats = getWeeklyStats(sessions);
   const hasProfile = profile.name && profile.sex;
   const showBackupReminder = shouldShowBackupReminder();
+  const firstName = (profile.name || '').split(' ')[0];
 
   const lastSession = sessions.length > 0
     ? sessions.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
     : null;
-
   const lastEvent = lastSession ? EVENTS.find((e) => e.id === lastSession.event) : null;
   const lastDateStr = lastSession
     ? new Date(lastSession.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : '';
+
+  // Days since last throw → human-friendly hero subline.
+  const daysSince = lastSession
+    ? Math.floor((Date.now() - new Date(lastSession.date).getTime()) / 86400000)
+    : null;
+  const lastThrewText =
+    daysSince === null ? '' :
+    daysSince <= 0 ? 'You threw today \u{1F525}' :
+    daysSince === 1 ? 'Last threw yesterday' :
+    `Last threw ${daysSince} days ago`;
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   const allTimePBs = calculatePersonalBests(sessions);
   const seasonPBs = getCurrentSeasonBests(sessions);
@@ -61,7 +77,11 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
 
   return (
     <div className="tab-content" id="tab-dashboard">
-      <h2 className="tab-title">Dashboard</h2>
+      {/* Segmented control (Today / Records) */}
+      <div className="dash-segment">
+        <button className={view === 'today' ? 'active' : ''} onClick={() => setView('today')}>Today</button>
+        <button className={view === 'records' ? 'active' : ''} onClick={() => setView('records')}>Records</button>
+      </div>
 
       {!hasProfile && (
         <div className="reminder">
@@ -69,102 +89,112 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
           <span>Complete your profile to get the most out of the app</span>
         </div>
       )}
-
-      {showBackupReminder && sessions.length > 0 && (
+      {showBackupReminder && (
         <div className="reminder" style={{ backgroundColor: '#e8f4fd', borderColor: '#4facfe' }}>
           <span>&#128190;</span>
           <span>Back up your data! Go to Profile to export.</span>
         </div>
       )}
 
-      {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-value">{streak}</div>
-          <div className="stat-label">Day Streak</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{weeklyStats.count}</div>
-          <div className="stat-label">Week</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{weeklyStats.totalThrows}</div>
-          <div className="stat-label">Throws</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{weeklyStats.avgRPE || '\u2014'}</div>
-          <div className="stat-label">Avg RPE</div>
-        </div>
-      </div>
-
-      {/* Readiness */}
-      <div className="readiness-section">
-        <h3 className="section-title">Readiness</h3>
-        <ReadinessCard sessions={sessions} />
-      </div>
-
-      {/* Personal Bests */}
-      {allTimePBs.length > 0 && (
-        <div className="pb-section">
-          <h3 className="section-title">Personal Bests</h3>
-          <div className="pb-grid">
-            {allTimePBs.map((pb) => {
-              const event = EVENTS.find((e) => e.id === pb.event);
-              const seasonPB = seasonPBs.find((s) => s.event === pb.event);
-              return (
-                <PBCard key={pb.event} pb={pb} seasonPB={seasonPB} eventName={event?.name || pb.event} distanceUnit={distanceUnit} />
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Last Session */}
-      {lastSession && (
-        <div className="last-session">
-          <h3 className="section-title">Last Session</h3>
-          <div className="session-card">
-            <div className="session-header">
-              <span className="session-event">{lastEvent?.name || lastSession.event}</span>
-              <span className="session-date">{lastDateStr}</span>
+      {view === 'today' ? (
+        <>
+          {/* Hero */}
+          <div className="dash-hero">
+            <div className="dash-hero-top">
+              <div>
+                <div className="dash-hero-greeting">{greeting}{firstName ? `, ${firstName}` : ''}</div>
+                {lastThrewText && <div className="dash-hero-sub">{lastThrewText}</div>}
+              </div>
+              {streak > 0 && <div className="dash-hero-streak">{streak}&#128293;</div>}
             </div>
-            <div className="session-stats">
-              <div className="session-stat">
-                <span className="session-stat-label">Best</span>
-                <span className="session-stat-value">{formatDistance(lastSession.bestMark, distanceUnit)}</span>
-              </div>
-              <div className="session-stat">
-                <span className="session-stat-label">RPE</span>
-                <span className="session-stat-value">{lastSession.rpe}/10</span>
-              </div>
-              <div className="session-stat">
-                <span className="session-stat-label">Throws</span>
-                <span className="session-stat-value">{lastSession.throws}</span>
-              </div>
+            <button className="primary-button" onClick={() => onNavigate('log')}>+ Log Session</button>
+          </div>
+
+          {/* Compact KPI pills */}
+          <div className="dash-pills">
+            <div className="dash-pill">
+              <span className="dp-val">{weeklyStats.count}</span>
+              <span className="dp-label">This week</span>
+            </div>
+            <div className="dash-pill">
+              <span className="dp-val">{weeklyStats.totalThrows}</span>
+              <span className="dp-label">Throws</span>
+            </div>
+            <div className="dash-pill">
+              <span className="dp-val">{weeklyStats.avgRPE || '—'}</span>
+              <span className="dp-label">Avg RPE</span>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Achievement Badges - Compact */}
-      {sessions.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <h3 className="section-title">Badges</h3>
-          <AchievementBadges sessions={sessions} compact />
-        </div>
-      )}
+          {/* Readiness */}
+          <div className="readiness-section">
+            <h3 className="section-title">Readiness</h3>
+            <ReadinessCard sessions={sessions} />
+          </div>
 
-      {/* Action buttons */}
-      <div className="dashboard-actions">
-        <button className="primary-button" onClick={() => onNavigate('log')}>
-          + Log Session
-        </button>
-        {onStartMeetDay && (
-          <button className="secondary-button meet-day-launch" onClick={onStartMeetDay}>
-            Meet Day Mode
-          </button>
-        )}
-      </div>
+          {/* Last session */}
+          {lastSession && (
+            <div className="last-session">
+              <h3 className="section-title">Last Session</h3>
+              <div className="session-card">
+                <div className="session-header">
+                  <span className="session-event">{lastEvent?.name || lastSession.event}</span>
+                  <span className="session-date">{lastDateStr}</span>
+                </div>
+                <div className="session-stats">
+                  <div className="session-stat">
+                    <span className="session-stat-label">Best</span>
+                    <span className="session-stat-value">{formatDistance(lastSession.bestMark, distanceUnit)}</span>
+                  </div>
+                  <div className="session-stat">
+                    <span className="session-stat-label">RPE</span>
+                    <span className="session-stat-value">{lastSession.rpe}/10</span>
+                  </div>
+                  <div className="session-stat">
+                    <span className="session-stat-label">Throws</span>
+                    <span className="session-stat-value">{lastSession.throws}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Secondary actions */}
+          <div className="dash-actions-row">
+            {onStartMeetDay && (
+              <button className="secondary-button meet-day-launch" onClick={onStartMeetDay}>Meet Day</button>
+            )}
+            {onStartWrapped && sessions.length >= 3 && (
+              <button className="secondary-button wrapped-launch" onClick={onStartWrapped}>&#x1F94F; Wrapped</button>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Records: PBs + badges */}
+          {allTimePBs.length > 0 ? (
+            <div className="pb-section">
+              <h3 className="section-title">Personal Bests</h3>
+              <div className="pb-grid">
+                {allTimePBs.map((pb) => {
+                  const event = EVENTS.find((e) => e.id === pb.event);
+                  const seasonPB = seasonPBs.find((s) => s.event === pb.event);
+                  return (
+                    <PBCard key={pb.event} pb={pb} seasonPB={seasonPB} eventName={event?.name || pb.event} distanceUnit={distanceUnit} />
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="dash-empty-note">Log a few sessions and your personal bests will show up here.</p>
+          )}
+
+          <div style={{ marginTop: 24 }}>
+            <h3 className="section-title">Badges</h3>
+            <AchievementBadges sessions={sessions} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

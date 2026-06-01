@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Session } from '@/lib/types';
-import { EVENTS } from '@/lib/constants';
+import { Session, Profile } from '@/lib/types';
+import { EVENTS, RPE_EMOJI } from '@/lib/constants';
 import { toLocalDateKey } from '@/lib/dates';
+import { suggestImplementKg } from '@/lib/implements';
+import { getEffectiveLevel } from '@/lib/athlete-level';
 import {
   formatDistance,
   parseDistanceToMeters,
@@ -14,6 +16,8 @@ import {
 
 interface MeetDayModeProps {
   distanceUnit: DistanceUnit;
+  profile: Profile;
+  priorBestByEvent: Record<string, number>;
   onSave: (session: Session) => void;
   onExit: () => void;
 }
@@ -26,7 +30,7 @@ interface Attempt {
 
 const MAX_ATTEMPTS = 6;
 
-export default function MeetDayMode({ distanceUnit, onSave, onExit }: MeetDayModeProps) {
+export default function MeetDayMode({ distanceUnit, profile, priorBestByEvent, onSave, onExit }: MeetDayModeProps) {
   const [step, setStep] = useState<'setup' | 'compete' | 'summary'>('setup');
   const [event, setEvent] = useState('');
   const [meetName, setMeetName] = useState('');
@@ -78,6 +82,30 @@ export default function MeetDayMode({ distanceUnit, onSave, onExit }: MeetDayMod
     ? validAttempts.reduce((sum, a) => sum + a.distance!, 0) / validAttempts.length
     : 0;
 
+  // Series + PR context (W6 polish)
+  const foulCount = attempts.filter((a) => a.foul).length;
+  const spread = validAttempts.length > 1
+    ? Math.max(...validAttempts.map((a) => a.distance!)) - Math.min(...validAttempts.map((a) => a.distance!))
+    : 0;
+  const priorBest = priorBestByEvent[event] ?? 0;
+  const isPR = bestMark > 0 && bestMark > priorBest;
+  const prDelta = isPR && priorBest > 0 ? bestMark - priorBest : 0;
+  const eventSuggestion = event ? suggestImplementKg(profile, event) : null;
+  const isRookie = getEffectiveLevel(profile) === 'rookie';
+  const rpeBucket = (v: number) => RPE_EMOJI.find((r) => v <= r.value)?.value ?? 10;
+
+  // Selecting an event auto-fills the standard implement (unless already typed).
+  const selectEvent = (id: string) => {
+    setEvent(id);
+    if (!implementWeight) {
+      const sugg = suggestImplementKg(profile, id);
+      if (sugg) {
+        setImplementWeight(sugg.kg.toString());
+        setWeightUnit('kg');
+      }
+    }
+  };
+
   const handleFinish = () => {
     const session: Session = {
       id: Date.now().toString(),
@@ -123,7 +151,7 @@ export default function MeetDayMode({ distanceUnit, onSave, onExit }: MeetDayMod
                 <button
                   key={ev.id}
                   className={`meet-event-btn${event === ev.id ? ' active' : ''}`}
-                  onClick={() => setEvent(ev.id)}
+                  onClick={() => selectEvent(ev.id)}
                 >
                   <div className="event-icon" dangerouslySetInnerHTML={{ __html: ev.svg }} />
                   <span>{ev.name}</span>
@@ -154,6 +182,11 @@ export default function MeetDayMode({ distanceUnit, onSave, onExit }: MeetDayMod
                   <option value="lbs">lbs</option>
                 </select>
               </div>
+              {eventSuggestion && (
+                <div className="meet-impl-hint">
+                  Standard for you: {eventSuggestion.kg} kg · {eventSuggestion.label}
+                </div>
+              )}
             </div>
           </div>
 
@@ -236,6 +269,11 @@ export default function MeetDayMode({ distanceUnit, onSave, onExit }: MeetDayMod
                 Current Best: <strong>{formatDistance(bestMark, distanceUnit)}</strong>
               </div>
             )}
+            {isPR && (
+              <div className="meet-live-pr">
+                🔥 {prDelta > 0 ? `PR! +${formatDistance(prDelta, distanceUnit)}` : 'New best mark'}
+              </div>
+            )}
           </div>
         ) : (
           <div className="current-attempt">
@@ -267,8 +305,34 @@ export default function MeetDayMode({ distanceUnit, onSave, onExit }: MeetDayMod
         <div className="summary-hero">
           <div className="summary-event">{selectedEvent?.name}</div>
           <div className="summary-best">{formatDistance(bestMark, distanceUnit)}</div>
+          {isPR && (
+            <div className="meet-pr-badge">
+              {prDelta > 0 ? `🏆 NEW PR · +${formatDistance(prDelta, distanceUnit)}` : '🏆 New best mark'}
+            </div>
+          )}
           <div className="summary-meet">{meetName}</div>
         </div>
+
+        {validAttempts.length > 0 && (
+          <div className="meet-series-stats">
+            <div className="mss-item">
+              <span className="mss-val">{validAttempts.length}</span>
+              <span className="mss-label">Valid</span>
+            </div>
+            <div className="mss-item">
+              <span className="mss-val">{foulCount}</span>
+              <span className="mss-label">Fouls</span>
+            </div>
+            <div className="mss-item">
+              <span className="mss-val">{formatDistance(avgMark, distanceUnit)}</span>
+              <span className="mss-label">Average</span>
+            </div>
+            <div className="mss-item">
+              <span className="mss-val">{formatDistance(spread, distanceUnit)}</span>
+              <span className="mss-label">Spread</span>
+            </div>
+          </div>
+        )}
 
         <div className="summary-attempts">
           {attempts.map((a, i) => (
@@ -294,18 +358,34 @@ export default function MeetDayMode({ distanceUnit, onSave, onExit }: MeetDayMod
           </div>
 
           <div className="meet-field">
-            <label className="meet-label">RPE</label>
-            <div className="rpe-grid">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
-                <button
-                  key={v}
-                  className={`rpe-button${rpe === v ? ' active' : ''}`}
-                  onClick={() => setRpe(v)}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
+            <label className="meet-label">{isRookie ? 'How hard was it?' : 'RPE'}</label>
+            {isRookie ? (
+              <div className="rpe-emoji-grid">
+                {RPE_EMOJI.map((r) => (
+                  <button
+                    key={r.value}
+                    type="button"
+                    className={`rpe-emoji-button${rpeBucket(rpe) === r.value ? ' active' : ''}`}
+                    onClick={() => setRpe(r.value)}
+                  >
+                    <span className="rpe-emoji">{r.emoji}</span>
+                    <span className="rpe-emoji-label">{r.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="rpe-grid">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
+                  <button
+                    key={v}
+                    className={`rpe-button${rpe === v ? ' active' : ''}`}
+                    onClick={() => setRpe(v)}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

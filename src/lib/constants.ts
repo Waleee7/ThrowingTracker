@@ -29,6 +29,16 @@ export const EVENTS: ThrowingEvent[] = [
 ];
 
 export const RPE_SCALE = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// Rookie-tier RPE (W7): friendly emoji buckets that still store a numeric RPE,
+// so analytics / readiness keep reading the same 1-10 field unchanged.
+export const RPE_EMOJI = [
+  { value: 2, emoji: '\u{1F60C}', label: 'Easy' },
+  { value: 4, emoji: '\u{1F642}', label: 'Light' },
+  { value: 6, emoji: '\u{1F610}', label: 'Moderate' },
+  { value: 8, emoji: '\u{1F624}', label: 'Hard' },
+  { value: 10, emoji: '\u{1F975}', label: 'All out' },
+];
 export const HEIGHT_UNITS = ['cm', 'ft/in'] as const;
 export const WEIGHT_UNITS = ['kg', 'lbs'] as const;
 export const DISTANCE_UNITS = ['m', 'ft'] as const;

@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { TabId, Session, Profile } from '@/lib/types';
 import { useProfile } from '@/hooks/useProfile';
 import { useSessions } from '@/hooks/useSessions';
-import { checkForNewPR } from '@/lib/personal-bests';
+import { checkForNewPR, calculatePersonalBests } from '@/lib/personal-bests';
 import { getNewlyUnlocked, getUnlockedAchievements, Achievement } from '@/lib/achievements';
 import FloatingElements from '@/components/FloatingElements';
 import TabButton from '@/components/TabButton';
@@ -16,6 +16,7 @@ import ProgressChart from '@/components/ProgressChart';
 import ThrowScatter from '@/components/ThrowScatter';
 import PRAlert from '@/components/PRAlert';
 import MeetDayMode from '@/components/MeetDayMode';
+import SeasonWrapped from '@/components/SeasonWrapped';
 import AchievementBadges from '@/components/AchievementBadges';
 import AchievementToast from '@/components/AchievementToast';
 import Onboarding from '@/components/Onboarding';
@@ -33,6 +34,7 @@ export default function Home() {
   const [prAlert, setPrAlert] = useState<{ eventName: string; newMark: number; previousBest: number | null } | null>(null);
   const [darkMode, setDarkMode] = useState(false);
   const [showMeetDay, setShowMeetDay] = useState(false);
+  const [showWrapped, setShowWrapped] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [achievementToasts, setAchievementToasts] = useState<Achievement[]>([]);
   const unlockedIdsRef = useRef<string[]>([]);
@@ -193,11 +195,15 @@ export default function Home() {
 
   // Meet Day Mode (full screen takeover)
   if (showMeetDay) {
+    const priorBestByEvent: Record<string, number> = {};
+    for (const pb of calculatePersonalBests(sessions)) priorBestByEvent[pb.event] = pb.mark;
     return (
       <div className={`app${darkMode ? ' dark-mode' : ''}`}>
         <FloatingElements />
         <MeetDayMode
           distanceUnit={distanceUnit}
+          profile={profile}
+          priorBestByEvent={priorBestByEvent}
           onSave={handleMeetSave}
           onExit={() => setShowMeetDay(false)}
         />
@@ -249,6 +255,7 @@ export default function Home() {
             profile={profile}
             onNavigate={handleNavigate}
             onStartMeetDay={() => setShowMeetDay(true)}
+            onStartWrapped={() => setShowWrapped(true)}
             onLoadSample={handleLoadSample}
           />
         )}
@@ -304,6 +311,15 @@ export default function Home() {
         <AchievementToast
           achievement={achievementToasts[0]}
           onDone={dismissToast}
+        />
+      )}
+
+      {/* Season Wrapped (story overlay) */}
+      {showWrapped && (
+        <SeasonWrapped
+          sessions={sessions}
+          profile={profile}
+          onClose={() => setShowWrapped(false)}
         />
       )}
     </div>

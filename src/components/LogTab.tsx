@@ -371,7 +371,7 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
 
         {/* Weight */}
         <div className="form-group">
-          <label className="label">Implement Weight</label>
+          <label className="label">{isRookie ? 'Weight' : 'Implement Weight'}</label>
           <div className="input-group">
             <input
               type="number"
@@ -448,7 +448,7 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
           <>
             {/* Throws */}
             <div className="form-group">
-              <label className="label">Throws</label>
+              <label className="label">{isRookie ? 'How many throws?' : 'Throws'}</label>
               <input
                 type="number"
                 className={`input${errors.throws ? ' error' : ''}`}
@@ -463,7 +463,7 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
             {/* Best & Avg row */}
             <div className="form-row">
               <div className="form-group">
-                <label className="label">{distanceUnit === 'ft' ? 'Best (ft/in)' : 'Best (m)'}</label>
+                <label className="label">{isRookie ? 'Best throw' : distanceUnit === 'ft' ? 'Best (ft/in)' : 'Best (m)'}</label>
                 <input
                   type={distanceUnit === 'ft' ? 'text' : 'number'}
                   inputMode="decimal"
@@ -477,7 +477,7 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
               </div>
 
               <div className="form-group">
-                <label className="label">{distanceUnit === 'ft' ? 'Avg (ft/in)' : 'Avg (m)'}</label>
+                <label className="label">{isRookie ? 'Average throw' : distanceUnit === 'ft' ? 'Avg (ft/in)' : 'Avg (m)'}</label>
                 <input
                   type={distanceUnit === 'ft' ? 'text' : 'number'}
                   inputMode="decimal"
@@ -687,8 +687,8 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
               Cancel
             </button>
           )}
-          <button type="submit" className="primary-button" disabled={saving}>
-            {saving ? 'Saving...' : isEditing ? 'Update Session' : 'Save Session'}
+          <button type="submit" className={`primary-button${isRookie ? ' big-cta' : ''}`} disabled={saving}>
+            {saving ? 'Saving...' : isEditing ? 'Update Session' : isRookie ? 'Save my session 💪' : 'Save Session'}
           </button>
         </div>
       </form>

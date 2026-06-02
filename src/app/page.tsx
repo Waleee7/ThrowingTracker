@@ -5,6 +5,7 @@ import { TabId, Session, Profile } from '@/lib/types';
 import { useProfile } from '@/hooks/useProfile';
 import { useSessions } from '@/hooks/useSessions';
 import { checkForNewPR, calculatePersonalBests } from '@/lib/personal-bests';
+import { getEffectiveLevel } from '@/lib/athlete-level';
 import { getNewlyUnlocked, getUnlockedAchievements, Achievement } from '@/lib/achievements';
 import FloatingElements from '@/components/FloatingElements';
 import TabButton from '@/components/TabButton';
@@ -302,6 +303,7 @@ export default function Home() {
           newMark={prAlert.newMark}
           previousBest={prAlert.previousBest}
           distanceUnit={distanceUnit}
+          confetti={getEffectiveLevel(profile) === 'rookie'}
           onClose={() => setPrAlert(null)}
         />
       )}

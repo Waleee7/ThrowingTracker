@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import {
-  AppLogo, DashboardIcon, ProfileIcon, LogIcon, HistoryIcon, ProgressIcon, SunIcon, MoonIcon,
+  AppLogo, DashboardIcon, ProfileIcon, LogIcon, HistoryIcon, ProgressIcon, CoachIcon, SunIcon, MoonIcon,
 } from '@/components/Icons';
 import Onboarding from '@/components/Onboarding';
 import MeetDayMode from '@/components/MeetDayMode';
@@ -19,6 +19,7 @@ import { getEffectiveLevel } from '@/lib/athlete-level';
 
 const NAV = [
   { href: '/', label: 'Dashboard', Icon: DashboardIcon },
+  { href: '/coach', label: 'Coach', Icon: CoachIcon },
   { href: '/profile', label: 'Profile', Icon: ProfileIcon },
   { href: '/log', label: 'Log', Icon: LogIcon },
   { href: '/history', label: 'History', Icon: HistoryIcon },

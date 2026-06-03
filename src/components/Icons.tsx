@@ -70,6 +70,22 @@ export function ProgressIcon({ size = 24, className }: IconProps) {
   );
 }
 
+// Coach: Chat bubble with an AI spark — the AI Coach Brain
+export function CoachIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"
+        stroke="currentColor" strokeWidth="2" strokeLinejoin="round"
+      />
+      <path
+        d="M12 7.5l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 // App Logo: Throwing circle with sector lines and an implement trajectory
 export function AppLogo({ size = 32, className }: IconProps) {
   return (

@@ -56,9 +56,9 @@ export const DEFAULT_PROFILE = {
 export const SECTOR_ANGLE_DEG = 34.92;
 
 export const EVENT_COLORS: Record<string, string> = {
-  'shot-put': '#667eea',
-  'discus': '#764ba2',
-  'hammer': '#f093fb',
-  'weight-throw': '#4facfe',
-  'javelin': '#43e97b',
+  'shot-put': '#2f5575',
+  'discus': '#a83a22',
+  'hammer': '#8a6d34',
+  'weight-throw': '#3f7d6e',
+  'javelin': '#7a2e39',
 };

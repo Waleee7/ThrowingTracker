@@ -52,7 +52,7 @@ export default function SectorMap({
     const halfAngle = (SECTOR_ANGLE / 2) * (Math.PI / 180);
     const sectorLength = CIRCLE_Y - 20;
 
-    ctx.strokeStyle = 'rgba(102, 126, 234, 0.4)';
+    ctx.strokeStyle = 'rgba(47, 85, 117, 0.4)';
     ctx.lineWidth = 1;
 
     // Left line
@@ -93,9 +93,9 @@ export default function SectorMap({
     // Throwing circle
     ctx.beginPath();
     ctx.arc(CIRCLE_X, CIRCLE_Y, CIRCLE_RADIUS, 0, 2 * Math.PI);
-    ctx.fillStyle = 'rgba(102, 126, 234, 0.3)';
+    ctx.fillStyle = 'rgba(47, 85, 117, 0.3)';
     ctx.fill();
-    ctx.strokeStyle = '#667eea';
+    ctx.strokeStyle = '#2f5575';
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -239,6 +239,6 @@ function drawHeatmap(ctx: CanvasRenderingContext2D, points: LandingPoint[]) {
 }
 
 function getColor(index: number): string {
-  const colors = ['#43e97b', '#667eea', '#f093fb', '#4facfe', '#ff6b6b', '#ffd93d'];
+  const colors = ['#43e97b', '#2f5575', '#f093fb', '#4facfe', '#ff6b6b', '#ffd93d'];
   return colors[index % colors.length];
 }

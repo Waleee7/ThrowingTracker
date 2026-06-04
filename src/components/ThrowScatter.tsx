@@ -44,7 +44,7 @@ export default function ThrowScatter({ sessions, distanceUnit }: ThrowScatterPro
   if (colorBy === 'session') {
     overlayPoints = filteredSessions.map((s) => s.landingZone!);
     overlayColors = filteredSessions.map((_, i) => {
-      const colors = ['#43e97b', '#667eea', '#f093fb', '#4facfe', '#ff6b6b', '#ffd93d'];
+      const colors = ['#43e97b', '#2f5575', '#f093fb', '#4facfe', '#ff6b6b', '#ffd93d'];
       return colors[i % colors.length];
     });
   } else if (colorBy === 'event') {
@@ -55,7 +55,7 @@ export default function ThrowScatter({ sessions, distanceUnit }: ThrowScatterPro
     }
     for (const [eventId, pts] of Object.entries(byEvent)) {
       overlayPoints.push(pts);
-      overlayColors.push(EVENT_COLORS[eventId] || '#667eea');
+      overlayColors.push(EVENT_COLORS[eventId] || '#2f5575');
     }
   }
 

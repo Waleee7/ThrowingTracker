@@ -20,9 +20,9 @@ interface Slide {
 }
 
 const GRADIENTS = [
-  'linear-gradient(160deg, #667eea 0%, #764ba2 100%)',
-  'linear-gradient(160deg, #764ba2 0%, #f093fb 100%)',
-  'linear-gradient(160deg, #4facfe 0%, #667eea 100%)',
+  'linear-gradient(160deg, #2f5575 0%, #26506f 100%)',
+  'linear-gradient(160deg, #26506f 0%, #f093fb 100%)',
+  'linear-gradient(160deg, #4facfe 0%, #2f5575 100%)',
   'linear-gradient(160deg, #43e97b 0%, #38f9d7 100%)',
   'linear-gradient(160deg, #f093fb 0%, #f5576c 100%)',
   'linear-gradient(160deg, #5b6cf0 0%, #1e1b4b 100%)',

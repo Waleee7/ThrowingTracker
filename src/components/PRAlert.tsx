@@ -12,7 +12,7 @@ interface PRAlertProps {
   onClose: () => void;
 }
 
-const CONFETTI_COLORS = ['#667eea', '#FF6B35', '#f093fb', '#43e97b', '#FFD93D'];
+const CONFETTI_COLORS = ['#2f5575', '#2f5575', '#f093fb', '#43e97b', '#FFD93D'];
 
 export default function PRAlert({ eventName, newMark, previousBest, distanceUnit, confetti = false, onClose }: PRAlertProps) {
   const [visible, setVisible] = useState(false);

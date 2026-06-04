@@ -92,8 +92,8 @@ export function AppLogo({ size = 32, className }: IconProps) {
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className}>
       <defs>
         <linearGradient id="logoGrad" x1="0" y1="0" x2="48" y2="48">
-          <stop offset="0%" stopColor="#667eea" />
-          <stop offset="100%" stopColor="#764ba2" />
+          <stop offset="0%" stopColor="#2f5575" />
+          <stop offset="100%" stopColor="#26506f" />
         </linearGradient>
       </defs>
       {/* Background circle */}

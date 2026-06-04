@@ -150,7 +150,7 @@ function ProgressLine({ sessions, events, distanceUnit }: { sessions: Session[];
             type="monotone"
             dataKey={ev.id}
             name={ev.name}
-            stroke={EVENT_COLORS[ev.id] || '#667eea'}
+            stroke={EVENT_COLORS[ev.id] || '#2f5575'}
             strokeWidth={2}
             dot={{ r: 4 }}
             connectNulls
@@ -186,7 +186,7 @@ function VolumeBar({ sessions, events }: { sessions: Session[]; events: typeof E
         <Tooltip />
         <Legend />
         {events.map((ev) => (
-          <Bar key={ev.id} dataKey={ev.id} name={ev.name} fill={EVENT_COLORS[ev.id] || '#667eea'} stackId="throws" />
+          <Bar key={ev.id} dataKey={ev.id} name={ev.name} fill={EVENT_COLORS[ev.id] || '#2f5575'} stackId="throws" />
         ))}
       </BarChart>
     </ResponsiveContainer>
@@ -219,7 +219,7 @@ function RPETrend({ sessions, events, distanceUnit }: { sessions: Session[]; eve
         <YAxis yAxisId="right" orientation="right" fontSize={11} domain={[0, 10]} />
         <Tooltip />
         <Legend />
-        <Line yAxisId="left" type="monotone" dataKey="bestMark" name="Best Mark" stroke="#667eea" strokeWidth={2} dot={{ r: 3 }} />
+        <Line yAxisId="left" type="monotone" dataKey="bestMark" name="Best Mark" stroke="#2f5575" strokeWidth={2} dot={{ r: 3 }} />
         <Line yAxisId="right" type="monotone" dataKey="rpe" name="RPE" stroke="#f093fb" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="5 5" />
       </ComposedChart>
     </ResponsiveContainer>

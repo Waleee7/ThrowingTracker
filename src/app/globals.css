@@ -28,11 +28,18 @@
   --color-fg-muted: #A1A1AA;
   --color-fg-dim:   #71717A;
 
-  /* Accent — electric lime (rationed) */
-  --color-lime:        #C8FF00;
-  --color-lime-soft:   #A3E635;
-  --color-lime-bright: #D4FF33;
-  --color-on-lime:     #0A0A0B;
+  /* Accent — remapped to the orange house color (was electric lime).
+     Every legacy bg-lime / text-on-lime element flips to orange via this. */
+  --color-lime:        #FF5A1F;
+  --color-lime-soft:   #FF7A47;
+  --color-lime-bright: #FF7A47;
+  --color-on-lime:     #FFFFFF;
+
+  /* Accent — electric orange (house color) */
+  --color-orange:       #FF5A1F;
+  --color-orange-soft:  #FF7A47;
+  --color-orange-ink:   #CF4015;
+  --color-on-orange:    #FFFFFF;
 
   /* Per-event identity hues (tags/dots/strokes only) */
   --color-evt-shot:    #FF8A3D;
@@ -49,7 +56,7 @@
   --color-foul:     #71717A;
 
   /* Type families (already loaded in layout.tsx) */
-  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-display: 'Anton', 'Archivo', 'Inter', sans-serif;
   --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', ui-monospace, Menlo, monospace;
 
@@ -76,20 +83,20 @@
   --text:       var(--color-fg);
   --text-2:     var(--color-fg-soft);
   --text-muted: var(--color-fg-muted);
-  --accent:     var(--color-lime);
+  --accent:     var(--color-orange);
   --scrim:      linear-gradient(0deg, rgba(10,10,11,0.88) 0%, rgba(10,10,11,0.35) 60%, rgba(10,10,11,0.15) 100%);
 }
 
-/* Paper register = toggle OFF (no .dark on <html>) */
+/* Paper register = toggle OFF (no .dark on <html>) — WHITE house theme */
 :root:not(.dark) {
-  --bg:         var(--color-paper-50);
+  --bg:         #FFFFFF;
   --surface:    #FFFFFF;
-  --surface-2:  var(--color-paper-100);
-  --border:     var(--color-paper-200);
-  --text:       var(--color-paper-ink);
-  --text-2:     #3A3A30;
-  --text-muted: #6B6B5E;
-  --accent:     var(--color-lime);
+  --surface-2:  #F6F7F9;
+  --border:     #ECEEF1;
+  --text:       #0C0E12;
+  --text-2:     #23272E;
+  --text-muted: #6B7280;
+  --accent:     var(--color-orange);
   --scrim:      linear-gradient(0deg, rgba(10,10,11,0.78) 0%, rgba(10,10,11,0.30) 60%, rgba(10,10,11,0.10) 100%);
 }
 

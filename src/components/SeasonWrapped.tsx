@@ -1,9 +1,12 @@
 'use client';
 
 import { useMemo, useState, type CSSProperties } from 'react';
+import Image, { type StaticImageData } from 'next/image';
 import type { Session, Profile } from '@/lib/types';
 import { buildWrapped } from '@/lib/wrapped';
 import { formatDistance } from '@/lib/units';
+import { eventHero } from '@/components/HeroMedia';
+import wrappedBg from '@/assets/media/wrapped-bg.webp';
 
 interface SeasonWrappedProps {
   sessions: Session[];
@@ -12,21 +15,38 @@ interface SeasonWrappedProps {
 }
 
 interface Slide {
-  bg: string;
   kicker: string;
   big: string;
   label: string;
   sub?: string;
+  /** Event id → drives event hero backdrop + accent hue. Null = generic wrapped-bg. */
+  event?: string | null;
+  /** Accent hue token (one event hue per slide). */
+  hue: string;
 }
 
-const GRADIENTS = [
-  'linear-gradient(160deg, #2f5575 0%, #26506f 100%)',
-  'linear-gradient(160deg, #26506f 0%, #f093fb 100%)',
-  'linear-gradient(160deg, #4facfe 0%, #2f5575 100%)',
-  'linear-gradient(160deg, #43e97b 0%, #38f9d7 100%)',
-  'linear-gradient(160deg, #f093fb 0%, #f5576c 100%)',
-  'linear-gradient(160deg, #5b6cf0 0%, #1e1b4b 100%)',
+/** Per-event accent token (mirrors EVENT_COLORS keys → --color-evt-* vars). */
+const EVENT_HUE_VAR: Record<string, string> = {
+  'shot-put': 'var(--color-evt-shot)',
+  discus: 'var(--color-evt-discus)',
+  hammer: 'var(--color-evt-hammer)',
+  'weight-throw': 'var(--color-evt-weight)',
+  javelin: 'var(--color-evt-javelin)',
+};
+
+const HUE_CYCLE = [
+  'var(--color-lime)',
+  'var(--color-evt-discus)',
+  'var(--color-evt-shot)',
+  'var(--color-evt-javelin)',
+  'var(--color-evt-hammer)',
+  'var(--color-evt-weight)',
 ];
+
+function hueFor(event: string | null | undefined, idx: number): string {
+  if (event && EVENT_HUE_VAR[event]) return EVENT_HUE_VAR[event];
+  return HUE_CYCLE[idx % HUE_CYCLE.length];
+}
 
 export default function SeasonWrapped({ sessions, profile, onClose }: SeasonWrappedProps) {
   const unit = profile.distanceUnit ?? 'm';
@@ -36,69 +56,73 @@ export default function SeasonWrapped({ sessions, profile, onClose }: SeasonWrap
   const slides = useMemo<Slide[]>(() => {
     if (!data) return [];
     const firstName = (profile.name || 'Thrower').split(' ')[0];
-    const s: Slide[] = [];
-    s.push({ bg: GRADIENTS[0], kicker: data.seasonLabel, big: firstName, label: "Here's your season, wrapped." });
-    s.push({
-      bg: GRADIENTS[1], kicker: 'You showed up',
+    const favId = data.favoriteEvent?.id ?? null;
+    const raw: Array<Omit<Slide, 'hue'>> = [];
+    raw.push({ kicker: data.seasonLabel, big: firstName, label: "Here's your season, wrapped." });
+    raw.push({
+      kicker: 'You showed up',
       big: `${data.totalSessions}`, label: data.totalSessions === 1 ? 'session logged' : 'sessions logged',
       sub: `across ${data.activeDays} active ${data.activeDays === 1 ? 'day' : 'days'}`,
     });
-    s.push({
-      bg: GRADIENTS[2], kicker: 'Total reps',
+    raw.push({
+      kicker: 'Total reps',
       big: `${data.totalThrows}`, label: 'throws',
-      sub: data.totalFouls > 0 ? `${data.totalFouls} fouls — nobody's perfect` : 'zero fouls logged 🎯',
+      sub: data.totalFouls > 0 ? `${data.totalFouls} fouls — nobody's perfect` : 'zero fouls logged',
     });
     if (data.totalDistanceM > 0) {
-      s.push({
-        bg: GRADIENTS[3], kicker: 'Combined distance',
+      raw.push({
+        kicker: 'Combined distance',
         big: formatDistance(data.totalDistanceM, unit), label: 'thrown this season',
         sub: 'every legal throw, stacked end to end',
       });
     }
     if (data.favoriteEvent) {
-      s.push({
-        bg: GRADIENTS[4], kicker: 'Your main event',
+      raw.push({
+        kicker: 'Your main event',
         big: data.favoriteEvent.name, label: `${data.favoriteEvent.count} sessions`,
-        sub: 'this is your event',
+        sub: 'this is your event', event: data.favoriteEvent.id,
       });
     }
     if (data.topMark) {
-      s.push({
-        bg: GRADIENTS[5], kicker: 'Season best',
+      raw.push({
+        kicker: 'Season best',
         big: formatDistance(data.topMark.mark, unit), label: data.topMark.name,
-        sub: 'your biggest bomb of the year',
+        sub: 'your biggest bomb of the year', event: data.topMark.id,
       });
     }
     if (data.improvement) {
-      s.push({
-        bg: GRADIENTS[0], kicker: 'You got better',
+      raw.push({
+        kicker: 'You got better',
         big: `+${formatDistance(data.improvement.deltaM, unit)}`, label: `in the ${data.improvement.name}`,
-        sub: `+${data.improvement.pct.toFixed(0)}% from your first mark`,
+        sub: `+${data.improvement.pct.toFixed(0)}% from your first mark`, event: favId,
       });
     }
     if (data.busiestMonth) {
-      s.push({
-        bg: GRADIENTS[1], kicker: 'Grindiest month',
+      raw.push({
+        kicker: 'Grindiest month',
         big: data.busiestMonth.label, label: `${data.busiestMonth.count} sessions`,
         sub: 'you were locked in',
       });
     }
-    s.push({
-      bg: GRADIENTS[2], kicker: 'The grind',
+    raw.push({
+      kicker: 'The grind',
       big: `${data.competitions}`, label: data.competitions === 1 ? 'competition' : 'competitions',
       sub: `avg RPE ${data.avgRPE} — you left it all out there`,
     });
-    s.push({ bg: GRADIENTS[5], kicker: data.seasonLabel, big: 'Keep throwing 🥏', label: `See you next season, ${firstName}.` });
-    return s;
+    raw.push({ kicker: data.seasonLabel, big: 'Keep throwing', label: `See you next season, ${firstName}.` });
+    return raw.map((s, idx) => ({ ...s, hue: hueFor(s.event, idx) }));
   }, [data, profile.name, unit]);
 
   if (!data || slides.length === 0) {
     return (
       <div style={overlay} onClick={onClose}>
-        <div style={{ ...slideBox, background: GRADIENTS[0] }}>
-          <div style={kickerStyle}>Season Wrapped</div>
-          <div style={{ fontSize: 22, fontWeight: 800, marginTop: 12 }}>Not enough data yet</div>
-          <div style={labelStyle}>Log a few sessions this season and your Wrapped will be waiting. 🥏</div>
+        <div style={slideBox}>
+          <BackdropLayer image={wrappedBg} hue="var(--color-lime)" />
+          <div style={contentStyle}>
+            <div style={kickerStyle('var(--color-lime)')}>Season Wrapped</div>
+            <div style={{ ...bigStyle, fontSize: 30 }}>Not enough data yet</div>
+            <div style={labelStyle}>Log a few sessions this season and your Wrapped will be waiting.</div>
+          </div>
           <button style={doneBtn} onClick={onClose}>Got it</button>
         </div>
       </div>
@@ -109,10 +133,13 @@ export default function SeasonWrapped({ sessions, profile, onClose }: SeasonWrap
   const advance = () => (last ? onClose() : setI((n) => n + 1));
   const back = () => setI((n) => Math.max(0, n - 1));
   const slide = slides[i];
+  const backdrop = slide.event ? eventHero(slide.event) : wrappedBg;
 
   return (
     <div style={overlay}>
-      <div style={{ ...slideBox, background: slide.bg }}>
+      <div style={slideBox}>
+        <BackdropLayer image={backdrop} hue={slide.hue} />
+
         {/* progress bars */}
         <div style={progressRow}>
           {slides.map((_, idx) => (
@@ -129,8 +156,8 @@ export default function SeasonWrapped({ sessions, profile, onClose }: SeasonWrap
         <div style={tapRight} onClick={advance} />
 
         <div style={contentStyle}>
-          <div style={kickerStyle}>{slide.kicker}</div>
-          <div style={bigStyle}>{slide.big}</div>
+          <div style={kickerStyle(slide.hue)}>{slide.kicker}</div>
+          <div style={{ ...bigStyle, color: slide.hue }}>{slide.big}</div>
           <div style={labelStyle}>{slide.label}</div>
           {slide.sub && <div style={subStyle}>{slide.sub}</div>}
         </div>
@@ -145,45 +172,91 @@ export default function SeasonWrapped({ sessions, profile, onClose }: SeasonWrap
   );
 }
 
+/** Full-bleed image backdrop + dark ink scrim with a subtle hue-tinted base. */
+function BackdropLayer({ image, hue }: { image: StaticImageData; hue: string }) {
+  return (
+    <div style={backdropWrap} aria-hidden="true">
+      <Image
+        src={image}
+        alt=""
+        fill
+        placeholder="blur"
+        sizes="(max-width: 480px) 100vw, 420px"
+        style={{ objectFit: 'cover' }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'linear-gradient(0deg, rgba(10,10,11,0.94) 0%, rgba(10,10,11,0.72) 45%, rgba(10,10,11,0.55) 100%)',
+        }}
+      />
+      {/* hue wash anchored to the accent for cohesion */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `radial-gradient(120% 80% at 50% 100%, ${hue} 0%, transparent 55%)`,
+          opacity: 0.18,
+          mixBlendMode: 'screen',
+        }}
+      />
+    </div>
+  );
+}
+
 const overlay: CSSProperties = {
   position: 'fixed', inset: 0, zIndex: 1000,
-  background: 'rgba(0,0,0,0.85)', display: 'flex',
+  background: 'rgba(10,10,11,0.92)', display: 'flex',
   alignItems: 'center', justifyContent: 'center', padding: 16,
 };
 const slideBox: CSSProperties = {
   position: 'relative', width: '100%', maxWidth: 420, height: '80vh', maxHeight: 720,
-  borderRadius: 24, color: '#fff', overflow: 'hidden',
+  borderRadius: 'var(--radius-xl)', color: 'var(--color-fg)', overflow: 'hidden',
   display: 'flex', flexDirection: 'column', justifyContent: 'center',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+  border: '1px solid var(--color-ink-700)',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+  background: 'var(--color-ink-900)',
 };
+const backdropWrap: CSSProperties = { position: 'absolute', inset: 0, zIndex: 0 };
 const progressRow: CSSProperties = {
   position: 'absolute', top: 14, left: 14, right: 14, display: 'flex', gap: 4, zIndex: 3,
 };
 const progressTrack: CSSProperties = {
-  flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.3)', overflow: 'hidden',
+  flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.25)', overflow: 'hidden',
 };
 const progressFill: CSSProperties = {
-  height: '100%', background: '#fff', transition: 'width 0.3s ease',
+  height: '100%', background: 'var(--color-fg)', transition: 'width 0.3s ease',
 };
 const closeBtn: CSSProperties = {
   position: 'absolute', top: 28, right: 16, zIndex: 4,
-  background: 'transparent', border: 'none', color: '#fff', fontSize: 28,
+  background: 'transparent', border: 'none', color: 'var(--color-fg)', fontSize: 28,
   lineHeight: 1, cursor: 'pointer', opacity: 0.85,
 };
 const tapLeft: CSSProperties = { position: 'absolute', inset: 0, right: '60%', zIndex: 2, cursor: 'pointer' };
 const tapRight: CSSProperties = { position: 'absolute', inset: 0, left: '40%', zIndex: 2, cursor: 'pointer' };
 const contentStyle: CSSProperties = { position: 'relative', zIndex: 1, padding: '0 28px', textAlign: 'center' };
-const kickerStyle: CSSProperties = {
-  textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 13, fontWeight: 700, opacity: 0.85,
+const kickerStyle = (hue: string): CSSProperties => ({
+  textTransform: 'uppercase', letterSpacing: 2, fontSize: 13, fontWeight: 700, color: hue,
+  fontFamily: 'var(--font-mono)',
+});
+const bigStyle: CSSProperties = {
+  fontSize: 'clamp(40px, 12vw, 64px)', fontWeight: 800, margin: '14px 0 6px', lineHeight: 1.02,
+  fontFamily: 'var(--font-display)',
 };
-const bigStyle: CSSProperties = { fontSize: 'clamp(40px, 12vw, 64px)', fontWeight: 900, margin: '14px 0 6px', lineHeight: 1.05 };
-const labelStyle: CSSProperties = { fontSize: 20, fontWeight: 700, opacity: 0.95 };
-const subStyle: CSSProperties = { fontSize: 15, marginTop: 10, opacity: 0.8 };
+const labelStyle: CSSProperties = {
+  fontSize: 20, fontWeight: 700, color: 'var(--color-fg)', fontFamily: 'var(--font-display)',
+};
+const subStyle: CSSProperties = {
+  fontSize: 15, marginTop: 10, color: 'var(--color-fg-muted)', fontFamily: 'var(--font-sans)',
+};
 const hintStyle: CSSProperties = {
-  position: 'absolute', bottom: 22, left: 0, right: 0, textAlign: 'center', fontSize: 13, opacity: 0.7, zIndex: 1,
+  position: 'absolute', bottom: 22, left: 0, right: 0, textAlign: 'center', fontSize: 13,
+  color: 'var(--color-fg-muted)', zIndex: 1, fontFamily: 'var(--font-mono)',
 };
 const doneBtn: CSSProperties = {
   position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)', zIndex: 4,
-  background: '#fff', color: '#222', border: 'none', borderRadius: 999,
-  padding: '12px 32px', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+  background: 'var(--color-lime)', color: 'var(--color-on-lime)', border: 'none', borderRadius: 'var(--radius-pill)',
+  padding: '12px 32px', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-mono)',
 };

@@ -11,6 +11,7 @@ export default function LogPage() {
       onSave={app.saveSession}
       editSession={app.editSession}
       onCancelEdit={app.cancelEdit}
+      sessions={app.sessions}
     />
   );
 }

@@ -2,8 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import { Session, LandingPoint } from '@/lib/types';
-import { EVENTS, EVENT_COLORS } from '@/lib/constants';
+import { EVENTS } from '@/lib/constants';
 import { formatDistance, type DistanceUnit } from '@/lib/units';
+import { getChartTheme, eventColor } from '@/lib/theme';
 import SectorMap from './SectorMap';
 
 interface ThrowScatterProps {
@@ -37,16 +38,25 @@ export default function ThrowScatter({ sessions, distanceUnit }: ThrowScatterPro
     );
   }
 
+  const theme = getChartTheme();
+
+  // Broadcast session palette: cycle the per-event hues (consistent, themed)
+  // instead of the old rainbow. Best throw is always overridden to lime below.
+  const sessionPalette = [
+    theme.event['discus'],
+    theme.event['shot-put'],
+    theme.event['hammer'],
+    theme.event['weight-throw'],
+    theme.event['javelin'],
+  ];
+
   // Build overlay data based on color mode
   let overlayPoints: LandingPoint[][] = [];
   let overlayColors: string[] = [];
 
   if (colorBy === 'session') {
     overlayPoints = filteredSessions.map((s) => s.landingZone!);
-    overlayColors = filteredSessions.map((_, i) => {
-      const colors = ['#43e97b', '#2f5575', '#f093fb', '#4facfe', '#ff6b6b', '#ffd93d'];
-      return colors[i % colors.length];
-    });
+    overlayColors = filteredSessions.map((_, i) => sessionPalette[i % sessionPalette.length]);
   } else if (colorBy === 'event') {
     const byEvent: Record<string, LandingPoint[]> = {};
     for (const s of filteredSessions) {
@@ -55,13 +65,23 @@ export default function ThrowScatter({ sessions, distanceUnit }: ThrowScatterPro
     }
     for (const [eventId, pts] of Object.entries(byEvent)) {
       overlayPoints.push(pts);
-      overlayColors.push(EVENT_COLORS[eventId] || '#2f5575');
+      overlayColors.push(eventColor(theme, eventId));
     }
   }
 
   const allPoints = filteredSessions.flatMap((s) => s.landingZone!);
   const maxDistance = allPoints.length > 0 ? Math.max(...allPoints.map((p) => p.distance)) : 20;
   const sectorDepth = Math.ceil(maxDistance / 5) * 5 + 5;
+
+  // Best throw overall -> highlight lime. Find it across all overlay sets and
+  // splice it into its own single-point set drawn in lime on top.
+  const bestPoint = allPoints.length > 0
+    ? allPoints.reduce((a, b) => (b.distance > a.distance ? b : a))
+    : null;
+  if (viewMode === 'scatter' && bestPoint && overlayPoints.length > 0) {
+    overlayPoints = [...overlayPoints, [bestPoint]];
+    overlayColors = [...overlayColors, theme.lime];
+  }
 
   // Analysis insights (canonical meters -> display unit)
   const avgDistanceMeters = allPoints.length > 0
@@ -129,16 +149,16 @@ export default function ThrowScatter({ sessions, distanceUnit }: ThrowScatterPro
 
       <div className="scatter-insights">
         <div className="stat-card">
-          <div className="stat-value">{allPoints.length}</div>
-          <div className="stat-label">Total Throws</div>
+          <div className="stat-value" style={{ fontFamily: 'var(--font-mono)' }}>{allPoints.length}</div>
+          <div className="stat-label" style={{ fontFamily: 'var(--font-mono)' }}>Total Throws</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{formatDistance(avgDistanceMeters, distanceUnit)}</div>
-          <div className="stat-label">Avg Distance</div>
+          <div className="stat-value" style={{ fontFamily: 'var(--font-mono)' }}>{formatDistance(avgDistanceMeters, distanceUnit)}</div>
+          <div className="stat-label" style={{ fontFamily: 'var(--font-mono)' }}>Avg Distance</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{formatDistance(maxDistance, distanceUnit)}</div>
-          <div className="stat-label">Best</div>
+          <div className="stat-value" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-lime)' }}>{formatDistance(maxDistance, distanceUnit)}</div>
+          <div className="stat-label" style={{ fontFamily: 'var(--font-mono)' }}>Best</div>
         </div>
       </div>
     </div>

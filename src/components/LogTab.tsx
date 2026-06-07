@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import { Session, Profile, SessionType, MediaAttachment, ThrowEntry, LandingPoint } from '@/lib/types';
 import { EVENTS, RPE_SCALE, RPE_EMOJI } from '@/lib/constants';
 import { toLocalDateKey } from '@/lib/dates';
@@ -20,6 +21,8 @@ interface LogTabProps {
   onSave: (session: Session) => void;
   editSession?: Session | null;
   onCancelEdit?: () => void;
+  /** Prior sessions, newest-first not required — used to auto-fill last values. */
+  sessions?: Session[];
 }
 
 interface ThrowRow {
@@ -33,10 +36,17 @@ interface ThrowRow {
 const SECTOR_CX = 175; // CANVAS_WIDTH / 2
 const SECTOR_CY = 360; // CIRCLE_Y
 
-export default function LogTab({ profile, onSave, editSession, onCancelEdit }: LogTabProps) {
+export default function LogTab({ profile, onSave, editSession, onCancelEdit, sessions = [] }: LogTabProps) {
   const isEditing = !!editSession;
   const today = toLocalDateKey();
   const distanceUnit = profile.distanceUnit ?? 'm';
+
+  // Most recent prior session for a given event — powers sub-3s auto-fill.
+  const lastForEvent = (eventId: string): Session | undefined =>
+    sessions
+      .filter((s) => s.event === eventId)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+  const [autoFilled, setAutoFilled] = useState(false);
 
   // W7 tier UX: rookies get a friendlier, simpler surface (emoji RPE here).
   const isRookie = getEffectiveLevel(profile) === 'rookie';
@@ -326,13 +336,39 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit }: L
           <select
             className={`input${errors.event ? ' error' : ''}`}
             value={event}
-            onChange={(e) => { setEvent(e.target.value); setErrors((prev) => ({ ...prev, event: '' })); }}
+            onChange={(e) => {
+              const ev = e.target.value;
+              setEvent(ev);
+              setErrors((prev) => ({ ...prev, event: '' }));
+              // Sub-3s log: pre-fill implement + effort from the last session of
+              // this event (editable). Never override an in-progress edit.
+              if (!isEditing && ev) {
+                const prev = lastForEvent(ev);
+                if (prev) {
+                  setWeight(prev.implementWeight.toString());
+                  setWeightUnit(prev.weightUnit);
+                  setRpe(prev.rpe);
+                  setErrors((p) => ({ ...p, weight: '' }));
+                  setAutoFilled(true);
+                } else {
+                  setAutoFilled(false);
+                }
+              }
+            }}
           >
             <option value="">Select an event</option>
             {EVENTS.map((ev) => (
               <option key={ev.id} value={ev.id}>{ev.name}</option>
             ))}
           </select>
+          <div className="log-event-meta">
+            {autoFilled && !isEditing && (
+              <span className="autofill-note">&#8635; Pre-filled from your last {EVENTS.find((e) => e.id === event)?.name ?? 'session'}</span>
+            )}
+            {event && (
+              <Link href={`/technique?event=${event}`} className="tech-inline-link">View technique &rarr;</Link>
+            )}
+          </div>
           {errors.event && <span className="error-text">{errors.event}</span>}
         </div>
 

@@ -8,6 +8,8 @@ interface ExportData {
   sessions: Session[];
 }
 
+const DATE_KEY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 export function exportToJSON(): void {
   const data: ExportData = {
     version: 1,
@@ -91,10 +93,42 @@ export function validateImportData(data: unknown): { valid: boolean; error?: str
     return { valid: false, error: 'Missing sessions data' };
   }
 
-  // Validate each session has required fields
+  const isFiniteNumber = (v: unknown): v is number =>
+    typeof v === 'number' && Number.isFinite(v);
+
+  // Validate each session. id/date/event identity checks plus per-field numeric
+  // sanity so a malformed backup can't write NaN/garbage into storage and blank
+  // out the charts.
   for (const session of d.sessions) {
+    if (!session || typeof session !== 'object') {
+      return { valid: false, error: 'Invalid session data found' };
+    }
     if (!session.id || !session.date || !session.event) {
       return { valid: false, error: 'Invalid session data found' };
+    }
+    if (!DATE_KEY_RE.test(String(session.date))) {
+      return { valid: false, error: 'Invalid session date found' };
+    }
+    // Marks must be finite, non-negative numbers (distances in meters).
+    if (
+      !isFiniteNumber(session.bestMark) ||
+      session.bestMark < 0 ||
+      !isFiniteNumber(session.avgMark) ||
+      session.avgMark < 0
+    ) {
+      return { valid: false, error: 'Invalid mark value found' };
+    }
+    // Throw count must be a non-negative integer.
+    if (
+      !isFiniteNumber(session.throws) ||
+      session.throws < 0 ||
+      !Number.isInteger(session.throws)
+    ) {
+      return { valid: false, error: 'Invalid throw count found' };
+    }
+    // RPE is a 1-10 scale.
+    if (!isFiniteNumber(session.rpe) || session.rpe < 1 || session.rpe > 10) {
+      return { valid: false, error: 'Invalid RPE value found' };
     }
   }
 

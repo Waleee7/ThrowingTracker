@@ -55,10 +55,11 @@ export const DEFAULT_PROFILE = {
 
 export const SECTOR_ANGLE_DEG = 34.92;
 
+// Per-event broadcast hues. KEEP these keys (JS contract: EVENT_COLORS keys).
 export const EVENT_COLORS: Record<string, string> = {
-  'shot-put': '#2f5575',
-  'discus': '#a83a22',
-  'hammer': '#8a6d34',
-  'weight-throw': '#3f7d6e',
-  'javelin': '#7a2e39',
+  'shot-put': '#FF8A3D',
+  'discus': '#38BDF8',
+  'hammer': '#A78BFA',
+  'weight-throw': '#F472B6',
+  'javelin': '#2DD4BF',
 };

@@ -61,7 +61,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className={`app${app.darkMode ? ' dark-mode' : ''}`}>
+    <div className="app">
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <header className="header">
         <div className="header-content">
           <div className="logo-group">
@@ -69,26 +70,39 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <h1 className="logo">ThrowingTracker</h1>
           </div>
           <div className="header-right">
-            <button className="dark-mode-toggle" onClick={app.toggleDarkMode} title="Toggle dark mode">
+            <button
+              className="dark-mode-toggle"
+              onClick={app.toggleDarkMode}
+              aria-label={app.darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-pressed={app.darkMode}
+            >
               {app.darkMode ? <SunIcon size={18} /> : <MoonIcon size={18} />}
             </button>
             {app.streak > 0 && (
-              <div className="streak-badge">
+              <div className="streak-badge" aria-label={`${app.streak} day training streak`}>
                 <span className="streak-number">{app.streak}</span>
-                <span className="streak-label">&#128293;</span>
+                <span className="streak-label" aria-hidden="true">&#128293;</span>
               </div>
             )}
           </div>
         </div>
       </header>
 
-      <nav className="tab-nav">
-        {NAV.map(({ href, label, Icon }) => (
-          <Link key={href} href={href} className={`tab-button${pathname === href ? ' active' : ''}`}>
-            <span className="tab-icon"><Icon size={22} /></span>
-            <span className="tab-label">{label}</span>
-          </Link>
-        ))}
+      <nav className="tab-nav" aria-label="Primary">
+        {NAV.map(({ href, label, Icon }) => {
+          const isActive = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`tab-button${isActive ? ' active' : ''}`}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              <span className="tab-icon" aria-hidden="true"><Icon size={22} /></span>
+              <span className="tab-label">{label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
       <main className="main" id="main-content">{children}</main>

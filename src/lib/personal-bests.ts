@@ -1,5 +1,6 @@
 import { Session, PersonalBest } from './types';
 import { EVENTS } from './constants';
+import { fromDateKey } from './dates';
 
 export function calculatePersonalBests(sessions: Session[]): PersonalBest[] {
   const bestByEvent: Record<string, PersonalBest> = {};
@@ -26,7 +27,11 @@ export function getSeasonBests(
   seasonEnd: Date
 ): PersonalBest[] {
   const seasonSessions = sessions.filter((s) => {
-    const d = new Date(s.date);
+    // Parse the session date as a LOCAL date so the comparison is consistent with
+    // seasonStart/seasonEnd (also local). Using new Date(s.date) parses the key as
+    // UTC midnight, which shifts a day in non-UTC zones and misclassifies marks
+    // right at the Aug 31 / Sept 1 season boundary.
+    const d = fromDateKey(s.date);
     return d >= seasonStart && d <= seasonEnd;
   });
   return calculatePersonalBests(seasonSessions);

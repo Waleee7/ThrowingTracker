@@ -7,9 +7,12 @@ import { formatDistance, type DistanceUnit } from '@/lib/units';
 import { calculateStreak, getWeeklyStats } from '@/lib/analytics';
 import { calculatePersonalBests, getCurrentSeasonBests } from '@/lib/personal-bests';
 import { shouldShowBackupReminder } from '@/lib/export';
+import Link from 'next/link';
 import AchievementBadges from '@/components/AchievementBadges';
 import EmptyState from '@/components/EmptyState';
 import ReadinessCard from '@/components/ReadinessCard';
+import HeroMedia from '@/components/HeroMedia';
+import TodayCard from '@/components/TodayCard';
 
 interface DashboardTabProps {
   sessions: Session[];
@@ -90,7 +93,7 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
         </div>
       )}
       {showBackupReminder && (
-        <div className="reminder" style={{ backgroundColor: '#e8f4fd', borderColor: '#4facfe' }}>
+        <div className="reminder reminder-info">
           <span>&#128190;</span>
           <span>Back up your data! Go to Profile to export.</span>
         </div>
@@ -98,17 +101,21 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
 
       {view === 'today' ? (
         <>
-          {/* Hero */}
-          <div className="dash-hero">
+          {/* Glanceable status — answers "what's my status today?" in <10s */}
+          <TodayCard sessions={sessions} profile={profile} />
+
+          {/* Hero — broadcast stat-channel over event-specific cinematic still */}
+          <HeroMedia className="dash-hero" event={lastSession?.event} priority>
             <div className="dash-hero-top">
               <div>
+                {lastEvent && <div className="eyebrow dash-hero-eyebrow">Last session &middot; {lastEvent.name}</div>}
                 <div className="dash-hero-greeting">{greeting}{firstName ? `, ${firstName}` : ''}</div>
                 {lastThrewText && <div className="dash-hero-sub">{lastThrewText}</div>}
               </div>
               {streak > 0 && <div className="dash-hero-streak">{streak}&#128293;</div>}
             </div>
             <button className="primary-button" onClick={() => onNavigate('log')}>+ Log Session</button>
-          </div>
+          </HeroMedia>
 
           {/* Compact KPI pills */}
           <div className="dash-pills">
@@ -164,6 +171,7 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
             {onStartMeetDay && (
               <button className="secondary-button meet-day-launch" onClick={onStartMeetDay}>Meet Day</button>
             )}
+            <Link href={`/technique${lastSession ? `?event=${lastSession.event}` : ''}`} className="secondary-button">Technique</Link>
             {onStartWrapped && sessions.length >= 3 && (
               <button className="secondary-button wrapped-launch" onClick={onStartWrapped}>&#x1F94F; Wrapped</button>
             )}

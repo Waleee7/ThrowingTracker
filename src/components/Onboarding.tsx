@@ -1,9 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Profile } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
 import { AppLogo } from '@/components/Icons';
+import splashOnboarding from '@/assets/media/splash-onboarding.webp';
+
+/** Per-event accent token (mirrors EVENT_COLORS keys → --color-evt-* vars). */
+const EVENT_HUE_VAR: Record<string, string> = {
+  'shot-put': 'var(--color-evt-shot)',
+  discus: 'var(--color-evt-discus)',
+  hammer: 'var(--color-evt-hammer)',
+  'weight-throw': 'var(--color-evt-weight)',
+  javelin: 'var(--color-evt-javelin)',
+};
 import {
   AthleteGoal,
   EventId,
@@ -125,10 +136,52 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
         {step === 0 && (
           <div className="onboarding-step">
-            <div className="onboarding-logo">
-              <AppLogo size={64} />
+            <div
+              style={{
+                position: 'relative',
+                margin: '-4px -4px 16px',
+                borderRadius: 'var(--radius-lg)',
+                overflow: 'hidden',
+                minHeight: 240,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                textAlign: 'center',
+                padding: '24px 20px 22px',
+              }}
+            >
+              <Image
+                src={splashOnboarding}
+                alt=""
+                fill
+                placeholder="blur"
+                priority
+                sizes="(max-width: 480px) 100vw, 440px"
+                style={{ objectFit: 'cover', zIndex: 0 }}
+              />
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 1,
+                  background:
+                    'linear-gradient(0deg, rgba(10,10,11,0.92) 0%, rgba(10,10,11,0.6) 50%, rgba(10,10,11,0.4) 100%)',
+                }}
+              />
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                <div className="onboarding-logo">
+                  <AppLogo size={56} />
+                </div>
+                <h1
+                  className="onboarding-title"
+                  style={{ fontFamily: 'var(--font-display)', color: 'var(--color-fg)' }}
+                >
+                  ThrowingTracker
+                </h1>
+              </div>
             </div>
-            <h1 className="onboarding-title">ThrowingTracker</h1>
             <p className="onboarding-subtitle">
               Built for throwers — from your first meet to the Olympic stadium.
             </p>
@@ -293,19 +346,33 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 const implementKg = grade && sex
                   ? getRecommendedImplementKg(ev.id as EventId, grade, sex)
                   : null;
+                const isSelected = selectedEvents.includes(ev.id);
+                const hue = EVENT_HUE_VAR[ev.id];
                 return (
                   <button
                     key={ev.id}
-                    className={`onboarding-event-btn${selectedEvents.includes(ev.id) ? ' selected' : ''}`}
+                    className={`onboarding-event-btn${isSelected ? ' selected' : ''}`}
                     onClick={() => toggleEvent(ev.id)}
+                    style={
+                      isSelected && hue
+                        ? {
+                            borderColor: hue,
+                            boxShadow: `inset 0 0 0 1px ${hue}`,
+                          }
+                        : undefined
+                    }
                   >
-                    <div className="event-icon" dangerouslySetInnerHTML={{ __html: ev.svg }} />
+                    <div
+                      className="event-icon"
+                      style={hue ? { color: hue } : undefined}
+                      dangerouslySetInnerHTML={{ __html: ev.svg }}
+                    />
                     <span className="onboarding-event-name">{ev.name}</span>
                     {implementKg != null && (
                       <span className="onboarding-event-implement">{implementKg}kg</span>
                     )}
-                    {selectedEvents.includes(ev.id) && (
-                      <span className="onboarding-check">&#10003;</span>
+                    {isSelected && (
+                      <span className="onboarding-check" style={hue ? { color: hue } : undefined}>&#10003;</span>
                     )}
                   </button>
                 );

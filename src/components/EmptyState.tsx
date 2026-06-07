@@ -1,5 +1,8 @@
 'use client';
 
+import Image from 'next/image';
+import emptyField from '@/assets/media/empty-field.webp';
+
 interface EmptyStateProps {
   icon?: string;
   title: string;
@@ -12,7 +15,6 @@ interface EmptyStateProps {
 
 /** Shared welcoming empty state with optional primary/secondary CTAs. */
 export default function EmptyState({
-  icon = '\u{1F94F}',
   title,
   text,
   actionLabel,
@@ -23,7 +25,23 @@ export default function EmptyState({
   const hasActions = (actionLabel && onAction) || (secondaryLabel && onSecondary);
   return (
     <div className="empty-state">
-      <span className="empty-icon">{icon}</span>
+      <Image
+        src={emptyField}
+        alt=""
+        width={300}
+        height={150}
+        placeholder="blur"
+        sizes="(max-width: 480px) 80vw, 300px"
+        style={{
+          width: '100%',
+          maxWidth: 170,
+          height: 'auto',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--color-ink-700)',
+          marginBottom: 12,
+          objectFit: 'cover',
+        }}
+      />
       <p className="empty-title">{title}</p>
       {text && <p className="empty-text">{text}</p>}
       {hasActions && (

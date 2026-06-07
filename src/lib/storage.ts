@@ -39,7 +39,7 @@ export const storage = {
   getLastExport: (): string | null => get<string>(LAST_EXPORT_KEY),
   setLastExport: (date: string) => set(LAST_EXPORT_KEY, date),
 
-  getDarkMode: (): boolean => get<boolean>(DARK_MODE_KEY) ?? false,
+  getDarkMode: (): boolean => get<boolean>(DARK_MODE_KEY) ?? true,
   setDarkMode: (enabled: boolean) => set(DARK_MODE_KEY, enabled),
 
   getSchemaVersion: (): number => get<number>(SCHEMA_VERSION_KEY) ?? 0,

@@ -3,12 +3,31 @@
 import { useState, useMemo } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  ResponsiveContainer, BarChart, Bar, ComposedChart,
+  ResponsiveContainer, BarChart, Bar, ComposedChart, Area,
 } from 'recharts';
 import { Session } from '@/lib/types';
-import { EVENTS, EVENT_COLORS } from '@/lib/constants';
+import { EVENTS } from '@/lib/constants';
 import { weekStartKey, fromDateKey } from '@/lib/dates';
 import { distanceToDisplayNumber, distanceUnitLabel, type DistanceUnit } from '@/lib/units';
+import { getChartTheme, eventColor, type ChartTheme } from '@/lib/theme';
+
+const FONT_MONO = 'var(--font-mono)';
+
+/** Shared themed tooltip styling for the broadcast register. */
+function tooltipStyle(theme: ChartTheme) {
+  return {
+    contentStyle: {
+      background: theme.surface,
+      border: `1px solid ${theme.border}`,
+      borderRadius: 8,
+      fontFamily: FONT_MONO,
+      fontSize: 12,
+      color: theme.fg,
+    } as React.CSSProperties,
+    labelStyle: { color: theme.fgMuted, fontFamily: FONT_MONO } as React.CSSProperties,
+    itemStyle: { color: theme.fg, fontFamily: FONT_MONO } as React.CSSProperties,
+  };
+}
 
 interface ProgressChartProps {
   sessions: Session[];
@@ -115,6 +134,8 @@ export default function ProgressChart({ sessions, distanceUnit }: ProgressChartP
 }
 
 function ProgressLine({ sessions, events, distanceUnit }: { sessions: Session[]; events: typeof EVENTS; distanceUnit: DistanceUnit }) {
+  const theme = getChartTheme();
+
   const data = useMemo(() => {
     const dateMap: Record<string, Record<string, number>> = {};
     for (const s of sessions) {
@@ -136,32 +157,104 @@ function ProgressLine({ sessions, events, distanceUnit }: { sessions: Session[];
       });
   }, [sessions, distanceUnit]);
 
+  // Per-event index of the max (PB) point and the most-recent point, so we can
+  // mark the PB with a LIME dot and the latest with a WHITE dot.
+  const markers = useMemo(() => {
+    const out: Record<string, { pbIdx: number; lastIdx: number }> = {};
+    for (const ev of events) {
+      let pbIdx = -1, pbVal = -Infinity, lastIdx = -1;
+      data.forEach((row, i) => {
+        const v = (row as Record<string, unknown>)[ev.id];
+        if (typeof v === 'number') {
+          lastIdx = i;
+          if (v > pbVal) { pbVal = v; pbIdx = i; }
+        }
+      });
+      out[ev.id] = { pbIdx, lastIdx };
+    }
+    return out;
+  }, [data, events]);
+
+  const tip = tooltipStyle(theme);
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-        <XAxis dataKey="date" fontSize={11} />
-        <YAxis fontSize={11} unit={distanceUnitLabel(distanceUnit)} />
-        <Tooltip />
-        <Legend />
-        {events.map((ev) => (
-          <Line
-            key={ev.id}
-            type="monotone"
-            dataKey={ev.id}
-            name={ev.name}
-            stroke={EVENT_COLORS[ev.id] || '#2f5575'}
-            strokeWidth={2}
-            dot={{ r: 4 }}
-            connectNulls
-          />
-        ))}
-      </LineChart>
+      <ComposedChart data={data}>
+        <defs>
+          {events.map((ev) => {
+            const c = eventColor(theme, ev.id);
+            return (
+              <linearGradient key={ev.id} id={`area-${ev.id}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={c} stopOpacity={0.06} />
+                <stop offset="100%" stopColor={c} stopOpacity={0} />
+              </linearGradient>
+            );
+          })}
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke={theme.border} />
+        <XAxis dataKey="date" fontSize={11} tick={{ fill: theme.fgMuted, fontFamily: FONT_MONO }} stroke={theme.border} />
+        <YAxis fontSize={11} unit={distanceUnitLabel(distanceUnit)} tick={{ fill: theme.fgMuted, fontFamily: FONT_MONO }} stroke={theme.border} />
+        <Tooltip {...tip} />
+        <Legend wrapperStyle={{ fontFamily: FONT_MONO, fontSize: 12, color: theme.fgMuted }} />
+        {events.map((ev) => {
+          return (
+            <Area
+              key={`area-${ev.id}`}
+              type="monotone"
+              dataKey={ev.id}
+              name={ev.name}
+              legendType="none"
+              stroke="none"
+              fill={`url(#area-${ev.id})`}
+              connectNulls
+              isAnimationActive={false}
+              activeDot={false}
+            />
+          );
+        })}
+        {events.map((ev) => {
+          const c = eventColor(theme, ev.id);
+          const m = markers[ev.id];
+          return (
+            <Line
+              key={ev.id}
+              type="monotone"
+              dataKey={ev.id}
+              name={ev.name}
+              stroke={c}
+              strokeWidth={2}
+              dot={(props) => (
+                <ProgressDot key={`${ev.id}-${props.index}`} {...props} baseColor={c} theme={theme}
+                  isPB={props.index === m.pbIdx} isLast={props.index === m.lastIdx} />
+              )}
+              connectNulls
+            />
+          );
+        })}
+      </ComposedChart>
     </ResponsiveContainer>
   );
 }
 
+/** Dot renderer: lime ring on PB/max, white on most-recent, event hue otherwise. */
+function ProgressDot(props: {
+  cx?: number; cy?: number; index?: number; value?: number;
+  baseColor: string; theme: ChartTheme; isPB: boolean; isLast: boolean;
+}) {
+  const { cx, cy, baseColor, theme, isPB, isLast, value } = props;
+  if (cx == null || cy == null || value == null) return <g />;
+  if (isPB) {
+    return <circle cx={cx} cy={cy} r={5} fill={theme.lime} stroke={theme.bg} strokeWidth={1.5} />;
+  }
+  if (isLast) {
+    return <circle cx={cx} cy={cy} r={4.5} fill={theme.fg} stroke={baseColor} strokeWidth={1.5} />;
+  }
+  return <circle cx={cx} cy={cy} r={3} fill={baseColor} />;
+}
+
 function VolumeBar({ sessions, events }: { sessions: Session[]; events: typeof EVENTS }) {
+  const theme = getChartTheme();
+
   const data = useMemo(() => {
     const weekMap: Record<string, Record<string, number>> = {};
     for (const s of sessions) {
@@ -177,16 +270,18 @@ function VolumeBar({ sessions, events }: { sessions: Session[]; events: typeof E
       }));
   }, [sessions]);
 
+  const tip = tooltipStyle(theme);
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-        <XAxis dataKey="week" fontSize={11} />
-        <YAxis fontSize={11} />
-        <Tooltip />
-        <Legend />
+        <CartesianGrid strokeDasharray="3 3" stroke={theme.border} />
+        <XAxis dataKey="week" fontSize={11} tick={{ fill: theme.fgMuted, fontFamily: FONT_MONO }} stroke={theme.border} />
+        <YAxis fontSize={11} tick={{ fill: theme.fgMuted, fontFamily: FONT_MONO }} stroke={theme.border} />
+        <Tooltip {...tip} cursor={{ fill: theme.border, opacity: 0.3 }} />
+        <Legend wrapperStyle={{ fontFamily: FONT_MONO, fontSize: 12, color: theme.fgMuted }} />
         {events.map((ev) => (
-          <Bar key={ev.id} dataKey={ev.id} name={ev.name} fill={EVENT_COLORS[ev.id] || '#2f5575'} stackId="throws" />
+          <Bar key={ev.id} dataKey={ev.id} name={ev.name} fill={eventColor(theme, ev.id)} stackId="throws" />
         ))}
       </BarChart>
     </ResponsiveContainer>
@@ -194,6 +289,8 @@ function VolumeBar({ sessions, events }: { sessions: Session[]; events: typeof E
 }
 
 function RPETrend({ sessions, events, distanceUnit }: { sessions: Session[]; events: typeof EVENTS; distanceUnit: DistanceUnit }) {
+  void events;
+  const theme = getChartTheme();
   const data = useMemo(() => {
     const dateMap: Record<string, { rpeTotal: number; rpeCount: number; bestMark: number; event: string }> = {};
     for (const s of sessions) {
@@ -210,17 +307,19 @@ function RPETrend({ sessions, events, distanceUnit }: { sessions: Session[]; eve
       }));
   }, [sessions, distanceUnit]);
 
+  const tip = tooltipStyle(theme);
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <ComposedChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-        <XAxis dataKey="date" fontSize={11} />
-        <YAxis yAxisId="left" fontSize={11} unit={distanceUnitLabel(distanceUnit)} />
-        <YAxis yAxisId="right" orientation="right" fontSize={11} domain={[0, 10]} />
-        <Tooltip />
-        <Legend />
-        <Line yAxisId="left" type="monotone" dataKey="bestMark" name="Best Mark" stroke="#2f5575" strokeWidth={2} dot={{ r: 3 }} />
-        <Line yAxisId="right" type="monotone" dataKey="rpe" name="RPE" stroke="#f093fb" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="5 5" />
+        <CartesianGrid strokeDasharray="3 3" stroke={theme.border} />
+        <XAxis dataKey="date" fontSize={11} tick={{ fill: theme.fgMuted, fontFamily: FONT_MONO }} stroke={theme.border} />
+        <YAxis yAxisId="left" fontSize={11} unit={distanceUnitLabel(distanceUnit)} tick={{ fill: theme.fgMuted, fontFamily: FONT_MONO }} stroke={theme.border} />
+        <YAxis yAxisId="right" orientation="right" fontSize={11} domain={[0, 10]} tick={{ fill: theme.fgMuted, fontFamily: FONT_MONO }} stroke={theme.border} />
+        <Tooltip {...tip} />
+        <Legend wrapperStyle={{ fontFamily: FONT_MONO, fontSize: 12, color: theme.fgMuted }} />
+        <Line yAxisId="left" type="monotone" dataKey="bestMark" name="Best Mark" stroke={theme.lime} strokeWidth={2} dot={{ r: 3, fill: theme.lime }} />
+        <Line yAxisId="right" type="monotone" dataKey="rpe" name="RPE" stroke={theme.fgMuted} strokeWidth={2} dot={{ r: 3, fill: theme.fgMuted }} strokeDasharray="5 5" />
       </ComposedChart>
     </ResponsiveContainer>
   );

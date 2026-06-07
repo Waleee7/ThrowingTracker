@@ -21,8 +21,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  themeColor: '#2f5575',
+  // maximumScale removed — blocking pinch-zoom fails WCAG 1.4.4 (Resize Text).
+  themeColor: '#0A0A0B',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(localStorage.getItem('throwingDarkMode')==='true'){document.documentElement.classList.add('dark')}}catch(e){}})();`,
+            __html: `(function(){try{var p=localStorage.getItem('throwingDarkMode');if(p!=='false'){document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})();`,
           }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

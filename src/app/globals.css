@@ -1,6 +1,121 @@
 @import "tailwindcss";
 
 /* ============================================================================
+   DESIGN TOKENS — Broadcast Sports Editorial  (overhaul 2026-06-06)
+   Dark-ink is the DEFAULT register; paper register = .dark toggled OFF.
+   .dark class is a JS contract (layout.tsx no-FOUC, AppContext) — do not rename.
+   ============================================================================ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Neutrals — dark register (default) */
+  --color-ink-900: #0A0A0B;
+  --color-ink-850: #101013;
+  --color-ink-800: #16161A;
+  --color-ink-750: #1C1C22;
+  --color-ink-700: #222228;
+  --color-ink-600: #2E2E36;
+
+  /* Paper register */
+  --color-paper-50:  #F5F5F0;
+  --color-paper-100: #E8E8E0;
+  --color-paper-200: #DAD9CE;
+  --color-paper-ink: #14140C;
+
+  /* Text on ink */
+  --color-fg:       #FFFFFF;
+  --color-fg-soft:  #F5F5F0;
+  --color-fg-muted: #A1A1AA;
+  --color-fg-dim:   #71717A;
+
+  /* Accent — electric lime (rationed) */
+  --color-lime:        #C8FF00;
+  --color-lime-soft:   #A3E635;
+  --color-lime-bright: #D4FF33;
+  --color-on-lime:     #0A0A0B;
+
+  /* Per-event identity hues (tags/dots/strokes only) */
+  --color-evt-shot:    #FF8A3D;
+  --color-evt-discus:  #38BDF8;
+  --color-evt-hammer:  #A78BFA;
+  --color-evt-weight:  #F472B6;
+  --color-evt-javelin: #2DD4BF;
+
+  /* Semantic */
+  --color-pb:       #C8FF00;
+  --color-sb:       #A3E635;
+  --color-positive: #4ADE80;
+  --color-negative: #FB7185;
+  --color-foul:     #71717A;
+
+  /* Type families (already loaded in layout.tsx) */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  /* Radius */
+  --radius-xs: 4px; --radius-sm: 8px; --radius-md: 12px;
+  --radius-lg: 16px; --radius-xl: 24px; --radius-pill: 999px;
+
+  /* Shadow (austere) */
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.45);
+  --shadow-lift: 0 6px 24px rgba(0,0,0,0.55);
+  --shadow-glow-lime: 0 0 0 1px var(--color-lime), 0 0 16px rgba(200,255,0,0.25);
+
+  /* Motion */
+  --ease-broadcast: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-press: 120ms; --dur-wipe: 220ms; --dur-reveal: 380ms; --dur-kb: 24s;
+}
+
+/* Semantic aliases consumed by the hand-written CSS below */
+:root {
+  --bg:         var(--color-ink-900);
+  --surface:    var(--color-ink-800);
+  --surface-2:  var(--color-ink-750);
+  --border:     var(--color-ink-700);
+  --text:       var(--color-fg);
+  --text-2:     var(--color-fg-soft);
+  --text-muted: var(--color-fg-muted);
+  --accent:     var(--color-lime);
+  --scrim:      linear-gradient(0deg, rgba(10,10,11,0.88) 0%, rgba(10,10,11,0.35) 60%, rgba(10,10,11,0.15) 100%);
+}
+
+/* Paper register = toggle OFF (no .dark on <html>) */
+:root:not(.dark) {
+  --bg:         var(--color-paper-50);
+  --surface:    #FFFFFF;
+  --surface-2:  var(--color-paper-100);
+  --border:     var(--color-paper-200);
+  --text:       var(--color-paper-ink);
+  --text-2:     #3A3A30;
+  --text-muted: #6B6B5E;
+  --accent:     var(--color-lime);
+  --scrim:      linear-gradient(0deg, rgba(10,10,11,0.78) 0%, rgba(10,10,11,0.30) 60%, rgba(10,10,11,0.10) 100%);
+}
+
+/* ---- Type utilities ---- */
+.tnum { font-variant-numeric: tabular-nums lining-nums; }
+.t-hero { font-family: var(--font-display); font-weight: 600; font-size: clamp(64px, 12vw, 112px); line-height: 0.88; letter-spacing: -0.02em; font-variant-numeric: tabular-nums lining-nums; }
+.t-display { font-family: var(--font-display); font-weight: 600; font-size: clamp(40px, 7vw, 72px); line-height: 0.92; letter-spacing: -0.02em; }
+.t-label { font-family: var(--font-mono); font-size: 12px; line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.t-meta { font-family: var(--font-mono); font-size: 11px; line-height: 1.2; letter-spacing: 0.04em; color: var(--text-muted); }
+.hero-unit { color: var(--accent); font-size: 0.34em; font-weight: 600; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); display: inline-flex; align-items: center; gap: 8px; }
+.eyebrow::before { content: "\25C6"; color: var(--accent); font-size: 9px; }
+
+/* ---- Motion keyframes ---- */
+@keyframes wipeInLeft { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes limeSweep { from { transform: translateX(-101%); } to { transform: translateX(101%); } }
+@keyframes kenBurns { from { transform: scale(1.0) translate3d(0,0,0); } to { transform: scale(1.08) translate3d(-1.5%, -1.5%, 0); } }
+@keyframes countReveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.kb-pan { animation: kenBurns var(--dur-kb) var(--ease-broadcast) alternate infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-pan { animation: none; }
+}
+/* ============================================================================ */
+
+/* ============================================================================
    RESET & BASE
    ============================================================================ */
 
@@ -4097,59 +4212,374 @@ body {
 .dark-mode .coach-disclaimer { color: #6f7488; }
 .dark .coach-bubble code,
 .dark-mode .coach-bubble code { background: rgba(47, 85, 117, 0.25); }
+/* ============================================================================
+   BROADCAST SPORTS EDITORIAL — theme override  (overhaul 2026-06-06)
+   Replaces the 2026-06-04 Pressbox/Steel block. Dark-ink default + paper
+   register via tokens. Descendant rules scoped under `.app` (specificity 0,2,0)
+   so they beat the base file's `.dark X` twins by source order. Tokens make a
+   single rule set work in BOTH registers.
+   ============================================================================ */
+
+/* ---- Root / base (incl. explicit .dark overrides for the base twins) ---- */
+body { font-family: var(--font-sans); color: var(--text); background-color: var(--bg); }
+.dark body { background-color: var(--bg); color: var(--text); }
+.loading { background: var(--bg); }
+.loading-spinner { border-color: color-mix(in srgb, var(--accent) 25%, transparent); border-top-color: var(--accent); }
+
+.app { background: var(--bg); }
+.dark .app, .dark-mode { background: var(--bg); }
+.main, .dark .main, .dark-mode .main { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; color: var(--text); }
+
+/* kill dead glass/background cost */
+.app::before { display: none !important; }
+.floating-container { display: none !important; }
+
+/* focus-visible ring everywhere (never outline:none) */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-xs);
+}
+
+/* skip link (a11y) */
+.skip-link {
+  position: fixed; top: 8px; left: 8px; z-index: 200; transform: translateY(-160%);
+  background: var(--accent); color: var(--color-on-lime); padding: 10px 16px;
+  border-radius: var(--radius-sm); font-family: var(--font-mono); font-weight: 700;
+  font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em;
+  transition: transform var(--dur-press) var(--ease-broadcast);
+}
+.skip-link:focus { transform: translateY(0); }
+
+/* ---- Everything inside .app (0,2,0 — beats base `.dark X` by source order) ---- */
+.app {
+  /* header → broadcast masthead */
+  & .header { background: var(--surface); color: var(--text); border-bottom: 1px solid var(--border);
+    border-left: 3px solid var(--accent); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  & .logo { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; color: var(--text); }
+  & .dark-mode-toggle { color: var(--text); }
+  & .dark-mode-toggle:hover { background: color-mix(in srgb, var(--text) 10%, transparent); }
+  & .streak-badge { background-color: color-mix(in srgb, var(--accent) 14%, transparent); }
+  & .streak-number { color: var(--accent); font-family: var(--font-mono); }
+
+  /* tab-nav → lower-third rail */
+  & .tab-nav { background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: none;
+    backdrop-filter: none; -webkit-backdrop-filter: none; }
+  & .tab-button { color: var(--text-muted); text-shadow: none; border-bottom: 2px solid transparent; }
+  & .tab-button:hover { color: var(--text); }
+  & .tab-button.active { background: transparent; color: var(--text); border-bottom: 2px solid var(--accent); }
+  & .tab-button.active .tab-icon { color: var(--accent); }
+  & .tab-label { font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* display titles → Fraunces */
+  & .tab-title, & .stat-value, & .readiness-score, & .profile-name, & .empty-title,
+  & .onboarding-title, & .pr-alert-title, & .pr-alert-mark, & .coach-hero-title,
+  & .session-event, & .readiness-label { font-family: var(--font-display); letter-spacing: -0.01em; color: var(--text); }
+  & .tab-title { font-weight: 600; text-shadow: none; font-size: clamp(28px, 6vw, 44px); }
+  & .stat-value, & .readiness-score, & .profile-name, & .empty-title { font-weight: 600; }
+  & .stat-value { font-variant-numeric: tabular-nums lining-nums; }
+
+  /* mono eyebrows / labels */
+  & .section-title, & .stat-label, & .pb-event, & .label, & .profile-section-title,
+  & .session-stat-label, & .mini-stat-label, & .pb-date, & .history-event { font-family: var(--font-mono); }
+  & .section-title { font-weight: 600; letter-spacing: 0.1em; text-shadow: none; color: var(--text-muted); text-transform: uppercase; }
+  & .label { text-shadow: none; letter-spacing: 0.07em; color: var(--text); text-transform: uppercase; }
+  & .stat-label, & .pb-event, & .session-stat-label, & .mini-stat-label,
+  & .session-date, & .unit-text, & .history-stats, & .danger-hint, & .wind-hint,
+  & .sector-hint, & .profile-sub, & .empty-text, & .history-event { color: var(--text-muted); }
+
+  /* surfaces → ink cards */
+  & .stat-card, & .session-card, & .history-item, & .event-stats-card, & .profile-section,
+  & .readiness-card, & .chart-wrapper, & .toggle-group, & .event-button, & .rpe-button,
+  & .filter-chip, & .media-upload-button, & .action-button {
+    background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-card);
+    color: var(--text); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  & .stat-card, & .session-card, & .history-item { border-radius: var(--radius-md); transition: border-color var(--dur-press), background var(--dur-press); }
+  & .history-item:hover { background: var(--surface-2); border-color: var(--color-ink-600); }
+  & .history-item.expanded { border-color: var(--accent); }
+  & .media-upload-button { border-style: dashed; color: var(--accent); }
+
+  /* inputs */
+  & .input, & .input-small, & .input-tiny, & .select, & .textarea, & .wind-input {
+    background-color: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+    backdrop-filter: none; -webkit-backdrop-filter: none; }
+  & .input:focus, & .input-small:focus, & .input-tiny:focus, & .select:focus, & .textarea:focus { border-color: var(--accent); }
+  & .input::placeholder, & .textarea::placeholder { color: var(--text-muted); }
+
+  /* buttons */
+  & .primary-button { background: var(--accent); color: var(--color-on-lime); border-radius: var(--radius-sm);
+    box-shadow: none; font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  & .primary-button:hover { background: var(--color-lime-soft); transform: none; box-shadow: var(--shadow-glow-lime); }
+  & .secondary-button { background: transparent; color: var(--accent); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); backdrop-filter: none; -webkit-backdrop-filter: none;
+    font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+  & .secondary-button:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); border-color: var(--accent); }
+  & .action-button { border-radius: var(--radius-sm); font-family: var(--font-mono); color: var(--text); }
+  & .filter-chip { border-radius: var(--radius-pill); font-family: var(--font-mono); color: var(--text-muted); }
+  & .filter-chip.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--text); }
+
+  /* event / rpe / toggle selected → lime */
+  & .event-button.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); box-shadow: none; }
+  & .event-icon, & .event-icon-small { color: var(--text); }
+  & .rpe-button { color: var(--text); }
+  & .rpe-button.active, & .toggle-button.active { background: var(--accent); color: var(--color-on-lime); border-color: transparent; box-shadow: none; }
+  & .toggle-button { color: var(--text-muted); }
+
+  /* PB / records → lime (was gold) */
+  & .pb-card { background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: var(--radius-sm); }
+  & .pb-mark { font-family: var(--font-display); font-weight: 600; color: var(--accent); }
+  & .pb-season { color: var(--color-lime-soft); }
+
+  /* readiness tone scale → lime family */
+  & .readiness-card { border-left: 4px solid var(--border); }
+  & .readiness-good { border-left-color: var(--color-positive); }
+  & .readiness-good .readiness-score, & .readiness-good .readiness-label { color: var(--color-positive); }
+  & .readiness-ok { border-left-color: var(--accent); }
+  & .readiness-ok .readiness-score, & .readiness-ok .readiness-label { color: var(--accent); }
+  & .readiness-warn { border-left-color: var(--color-lime-soft); }
+  & .readiness-warn .readiness-score, & .readiness-warn .readiness-label { color: var(--color-lime-soft); }
+  & .readiness-bad { border-left-color: var(--color-negative); }
+  & .readiness-bad .readiness-score, & .readiness-bad .readiness-label { color: var(--color-negative); }
+  & .readiness-factor, & .readiness-max { color: var(--text-muted); }
+
+  /* charts shell */
+  & .chart-empty { background: var(--surface); border: 1px dashed var(--border); color: var(--text-muted); backdrop-filter: none; }
+
+  /* reminder banner → lime keyline */
+  & .reminder { background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); color: var(--text); backdrop-filter: none; -webkit-backdrop-filter: none; }
+
+  /* history */
+  & .history-date { color: var(--text); }
+  & .history-notes { background: var(--surface-2); color: var(--text-2); }
+  & .throw-chip { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+  & .throw-chip.foul { background: color-mix(in srgb, var(--color-foul) 22%, transparent); color: var(--text-muted); text-decoration: line-through; }
+  & .foul-toggle.active { background: color-mix(in srgb, var(--color-foul) 30%, transparent); border-color: var(--color-foul); color: var(--text); }
+
+  /* PR alert → lime lower-third */
+  & .pr-alert-card { background: var(--color-ink-800); border: 1px solid var(--accent); color: var(--color-fg); box-shadow: var(--shadow-lift); }
+  & .pr-alert-title { color: var(--accent); }
+  & .pr-alert-mark { color: var(--color-fg); font-variant-numeric: tabular-nums; }
+  & .pr-alert-event, & .pr-alert-improvement { color: var(--color-fg-muted); }
+  & .pr-alert-dismiss { background: var(--accent); color: var(--color-on-lime); border: none; font-family: var(--font-mono); text-transform: uppercase; }
+  & .pr-alert-dismiss:hover { background: var(--color-lime-soft); }
+
+  /* coach */
+  & .coach-chip { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); font-family: var(--font-mono); }
+
+  /* profile avatar */
+  & .profile-avatar { background: var(--accent); color: var(--color-on-lime); box-shadow: none; }
+
+  /* sector / scatter chips */
+  & .sector-chip, & .landing-point-item { background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); }
+  & .sector-canvas { border: 1px solid var(--border); }
+
+  /* video player controls */
+  & .video-btn, & .speed-btn, & .tool-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  & .play-btn { background: var(--accent); color: var(--color-on-lime); border-color: transparent; }
+  & .speed-btn.active, & .tool-btn.active { background: color-mix(in srgb, var(--accent) 18%, transparent); border-color: var(--accent); color: var(--text); }
+  & .video-time { color: var(--text); font-family: var(--font-mono); }
+
+  /* empty state */
+  & .empty-icon { opacity: 0.4; }
+}
+
+/* ---- Reduced motion (global) ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important; scroll-behavior: auto !important;
+  }
+}
+/* ============================================================================ */
 
 /* ============================================================================
-   PRESSBOX / STEEL THEME LAYER  (appended 2026-06-04 — overrides by cascade)
-   Editorial serif + mono · cream paper · steel brand · gold = records/PBs
+   BROADCAST OVERHAUL — dashboard surfaces + HeroMedia  (flat selectors)
    ============================================================================ */
-:root { --tt-serif: 'Fraunces', Georgia, 'Times New Roman', serif; --tt-mono: 'JetBrains Mono', ui-monospace, monospace; }
+.app .section-title::before { background: var(--accent); }
 
-/* --- paper base --- */
-body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; color: #14140c; background-color: #e9e7dc; }
-.app { background: #e9e7dc; }
-.main { background: transparent; }
+.app .dash-segment { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.app .dash-segment button { color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; border-radius: var(--radius-sm); }
+.app .dash-segment button.active { background: var(--accent); color: var(--color-on-lime); box-shadow: none; }
 
-/* --- header + tab nav → light paper --- */
-.header { background: #fbfaf4; color: #14140c; border-bottom: 1px solid #ddd9ca; box-shadow: none; }
-.dark-mode-toggle { color: #14140c; }
-.dark-mode-toggle:hover { background: rgba(0,0,0,0.05); }
-.streak-badge { background-color: rgba(47,85,117,0.10); }
-.logo { font-family: var(--tt-serif); font-weight: 700; letter-spacing: -0.01em; }
-.dark .header, .dark-mode .header { background:#15181f; color:#e8e8ee; border-bottom-color: rgba(255,255,255,0.08); }
-.dark .dark-mode-toggle, .dark-mode .dark-mode-toggle { color:#e8e8ee; }
-.dark .streak-badge, .dark-mode .streak-badge { background-color: rgba(255,255,255,0.08); }
+.app .dash-hero { background: var(--color-ink-850); border: 1px solid var(--border); box-shadow: var(--shadow-lift); padding: 0; }
+.app .dash-hero::before { display: none; }
+.app .dash-hero-greeting { font-family: var(--font-display); color: var(--color-fg); font-size: clamp(26px, 6vw, 38px); font-weight: 600; }
+.app .dash-hero-sub { color: var(--color-fg-soft); opacity: 0.85; }
+.app .dash-hero-eyebrow { color: var(--color-fg-soft); margin-bottom: 6px; }
+.app .dash-hero-streak { color: var(--accent); font-family: var(--font-mono); }
 
-.tab-nav { background: #fbfaf4; border-bottom: 1px solid #ddd9ca; box-shadow: none; }
-.tab-button { color: #5f5b4d; text-shadow: none; }
-.tab-button.active { background: transparent; border-bottom: 2px solid #2f5575; color: #14140c; }
-.tab-label { font-family: var(--tt-mono); letter-spacing: 0.06em; }
-.dark .tab-nav, .dark-mode .tab-nav { background:#15181f; border-bottom-color: rgba(255,255,255,0.08); }
-.dark .tab-button.active, .dark-mode .tab-button.active { color:#e8e8ee; }
+.app .dash-pill { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-card); }
+.app .dp-val { font-family: var(--font-display); color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums lining-nums; }
+.app .dp-label { color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+.app .dash-empty-note { color: var(--text-muted); }
 
-/* --- editorial serif display --- */
-.tab-title, .stat-value, .readiness-score, .profile-name, .empty-title,
-.onboarding-title, .pr-alert-title, .pr-alert-mark, .coach-hero-title,
-.session-event, .readiness-label { font-family: var(--tt-serif); letter-spacing: -0.01em; }
-.tab-title { font-weight: 600; text-shadow: none; }
-.stat-value, .readiness-score, .profile-name, .empty-title { font-weight: 600; }
+.app .wrapped-launch { background: var(--surface-2) !important; color: var(--text) !important; border: 1px solid var(--accent) !important; }
+.app .meet-day-launch { color: var(--accent); }
+.app .reminder-info { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
 
-/* --- monospace labels / eyebrows --- */
-.section-title, .stat-label, .pb-event, .label, .profile-section-title,
-.session-stat-label, .mini-stat-label, .pb-date { font-family: var(--tt-mono); }
-.section-title { font-weight: 600; letter-spacing: 0.1em; text-shadow: none; color: #5f5b4d; }
-.label { text-shadow: none; letter-spacing: 0.07em; }
+/* HeroMedia */
+.hero-media { position: relative; overflow: hidden; isolation: isolate; min-height: 200px; }
+.hero-media-bg { position: absolute; inset: 0; z-index: 0; }
+.hero-media-img, .hero-media-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-media-scrim { position: absolute; inset: 0; background: var(--scrim); }
+.hero-media-content { position: relative; z-index: 1; padding: 20px; }
+.app .dash-hero .hero-media-content { display: flex; flex-direction: column; gap: 16px; min-height: 200px; justify-content: flex-end; }
+/* ============================================================================ */
 
-/* --- cards → hairline paper --- */
-.stat-card, .session-card, .history-item, .event-stats-card,
-.profile-section, .readiness-card { border: 1px solid #ddd9ca; box-shadow: 0 1px 2px rgba(40,38,20,0.04); }
-.stat-card, .session-card, .history-item { border-radius: 8px; }
+/* ============================================================================
+   BROADCAST OVERHAUL — coach / onboarding / meet-day  (flat selectors)
+   ============================================================================ */
 
-/* --- GOLD = records / personal bests --- */
-.pb-card { background: rgba(171,138,76,0.10); border: 1px solid rgba(171,138,76,0.35); border-radius: 8px; }
-.pb-mark { font-family: var(--tt-serif); font-weight: 600; color: #8a6d34; }
-.pb-season { color: #8a6d34; }
-.pr-alert-card { background: linear-gradient(135deg, #c9a14e 0%, #8a6d34 100%); }
+/* ---- COACH ---- */
+.app .coach-hero { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-left: 3px solid var(--accent); box-shadow: var(--shadow-card); }
+.app .coach-hero::before { display: none; }
+.app .coach-hero-icon { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+.app .coach-hero-title { font-family: var(--font-display); color: var(--text); }
+.app .coach-hero-sub { color: var(--text-muted); }
+.app .coach-mode-badge { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); font-family: var(--font-mono); }
+.app .coach-mode-badge.fallback { background: color-mix(in srgb, var(--color-foul) 25%, transparent); color: var(--text-muted); border-color: var(--border); }
+.app .coach-msg.assistant .coach-bubble { background: var(--surface); border: 1px solid var(--border); color: var(--text-2); box-shadow: none; }
+.app .coach-msg.user .coach-bubble { background: var(--surface-2); border: 1px solid var(--accent); color: var(--text); box-shadow: none; }
+.app .coach-bubble li::marker { color: var(--accent); }
+.app .coach-bubble code { background: var(--surface-2); color: var(--accent); font-family: var(--font-mono); }
+.app .coach-msg.user .coach-bubble code { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.app .coach-typing span { background: var(--accent); }
+.app .coach-chip { background: color-mix(in srgb, var(--accent) 8%, transparent); color: var(--accent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); font-family: var(--font-mono); }
+.app .coach-chip:hover { background: var(--accent); color: var(--color-on-lime); border-color: transparent; box-shadow: none; }
+.app .coach-input-bar { background: linear-gradient(to top, var(--bg) 72%, transparent); }
+.app .coach-input { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); }
+.app .coach-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.app .coach-send { background: var(--accent); color: var(--color-on-lime); box-shadow: none; }
+.app .coach-stop { background: var(--surface-2); color: var(--text); }
+.app .coach-stop-square { background: var(--accent); }
+.app .coach-disclaimer { color: var(--text-muted); }
 
-/* --- sharper Pressbox buttons --- */
-.primary-button { border-radius: 8px; }
-.secondary-button, .action-button, .filter-chip { border-radius: 7px; }
+/* ---- ONBOARDING ---- */
+.app .onboarding-card { background: var(--surface); border: 1px solid var(--border); }
+.app .onboarding-title { font-family: var(--font-display); color: var(--text); font-weight: 600; }
+.app .onboarding-subtitle { color: var(--text-muted); }
+.app .onboarding-dot { background: var(--border); }
+.app .onboarding-dot.active { background: var(--accent); }
+.app .onboarding-input { background: var(--surface-2); border: 1px solid var(--border); color: var(--text); }
+.app .onboarding-input:focus { border-color: var(--accent); }
+.app .onboarding-reasons li { background: var(--surface-2); color: var(--text-2); }
+.app .level-badge { color: var(--color-on-lime); box-shadow: none; }
+.app .level-badge.level-rookie { background: var(--color-positive); }
+.app .level-badge.level-competitor { background: var(--accent); }
+.app .level-badge.level-elite { background: var(--color-lime-soft); }
+
+/* ---- MEET DAY (arena: dark in both registers) ---- */
+.app .meet-day { background: var(--color-ink-900); }
+.app .meet-back-btn { background: color-mix(in srgb, var(--color-fg) 12%, transparent); color: var(--color-fg); }
+.app .meet-day-title, .app .meet-event-name { color: var(--color-fg); font-family: var(--font-display); }
+.app .meet-meet-name { color: var(--color-fg-muted); }
+.app .meet-setup { background: var(--color-ink-800); border: 1px solid var(--color-ink-700); }
+.app .meet-label { color: var(--color-fg-soft); font-family: var(--font-mono); }
+.app .meet-input { background: var(--color-ink-750); border: 1px solid var(--color-ink-700); color: var(--color-fg); }
+.app .meet-input:focus { border-color: var(--accent); }
+.app .meet-event-btn { background: var(--color-ink-800); border: 1px solid var(--color-ink-700); color: var(--color-fg); }
+.app .meet-event-btn.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.app .attempt-dot { border: 1px solid var(--color-ink-600); }
+.app .attempt-dot.current { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.app .attempt-dot.recorded { background: var(--accent); border-color: var(--accent); }
+.app .attempt-dot.foul { background: color-mix(in srgb, var(--color-foul) 40%, transparent); border-color: var(--color-foul); }
+.app .meet-pr-badge { background: var(--accent); color: var(--color-on-lime); }
+/* ============================================================================ */
+
+/* ============================================================================
+   BROADCAST OVERHAUL — onboarding interactive elements (flat)
+   ============================================================================ */
+.app .onboarding-btn.primary { background: var(--accent); color: var(--color-on-lime); box-shadow: none; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+.app .onboarding-btn.primary:hover { background: var(--color-lime-soft); transform: none; box-shadow: var(--shadow-glow-lime); }
+.app .feature-bullet { background: var(--accent); }
+.app .onboarding-feature { color: var(--text-2); }
+.app .onboarding-subtitle, .app .onboarding-step-desc { color: var(--text-muted); }
+.app .onboarding-step-title { font-family: var(--font-display); color: var(--text); }
+.app .onboarding-event-btn.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent); box-shadow: none; }
+.app .onboarding-check { color: var(--accent); }
+.app .onboarding-pill.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--text); }
+/* ============================================================================ */
+
+/* ============================================================================
+   BROADCAST OVERHAUL — final color leftovers (flat)
+   ============================================================================ */
+.app .history-meet { color: var(--accent); font-family: var(--font-mono); }
+.app .profile-section-title { color: var(--text-muted); }
+.app .impl-toggle { color: var(--accent); font-family: var(--font-mono); }
+.app .impl-suggest-ok { color: var(--color-positive); }
+.app .coach-bubble li::marker { color: var(--accent); }
+/* ============================================================================ */
+
+/* meet-day start + action buttons → lime */
+.app .meet-start-btn { background: var(--accent); color: var(--color-on-lime); box-shadow: none; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+.app .meet-start-btn:hover { background: var(--color-lime-soft); transform: none; }
+.app .meet-live-pr { color: var(--accent); font-family: var(--font-display); }
+/* ============================================================================ */
+
+/* ============================================================================
+   FEATURES — Technique Library + Today card  (overhaul v3.1, flat selectors)
+   ============================================================================ */
+
+/* ---- Technique Library ---- */
+.app .tech-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.app .tech-coach-link { flex: 0 0 auto; }
+.app .tech-event-rail { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; -webkit-overflow-scrolling: touch; }
+.app .tech-event-chip { flex: 0 0 auto; padding: 8px 14px; border-radius: var(--radius-pill); border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); font-family: var(--font-mono); font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; transition: all var(--dur-press); }
+.app .tech-event-chip.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--text); }
+.app .tech-hero { position: relative; overflow: hidden; border-radius: var(--radius-lg); border: 1px solid var(--border); min-height: 180px; display: flex; align-items: flex-end; margin-bottom: 16px; }
+.app .tech-hero-bg { position: absolute; inset: 0; z-index: 0; }
+.app .tech-hero-scrim { position: absolute; inset: 0; background: var(--scrim); }
+.app .tech-hero-body { position: relative; z-index: 1; padding: 18px; }
+.app .tech-focus { font-family: var(--font-display); font-size: clamp(20px, 4vw, 26px); line-height: 1.15; color: var(--color-fg); margin-top: 6px; max-width: 36ch; }
+.app .tech-variation-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.app .tech-variation-tab { flex: 1; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; }
+.app .tech-variation-tab.active { background: var(--accent); color: var(--color-on-lime); border-color: transparent; }
+.app .tech-phases { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 0 0 24px; padding: 0; }
+.app .tech-phase { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius-md); padding: 14px 16px; }
+.app .tech-phase-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.app .tech-phase-num { font-family: var(--font-mono); color: var(--accent); font-size: 13px; }
+.app .tech-phase-name { font-family: var(--font-display); font-size: 18px; color: var(--text); }
+.app .tech-cues { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.app .tech-cue { position: relative; padding-left: 18px; color: var(--text-2); font-size: 14.5px; line-height: 1.45; }
+.app .tech-cue::before { content: "\2014"; position: absolute; left: 0; color: var(--text-muted); }
+.app .tech-faults-title { margin-top: 8px; }
+.app .tech-faults { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.app .tech-fault { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px 14px; }
+.app .tech-fault-bad { color: var(--color-negative); font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+.app .tech-fault-fix { color: var(--text-2); font-size: 14px; line-height: 1.4; }
+.app .tech-fault-fix::before { content: "\2192  "; color: var(--accent); }
+.app .tech-disclaimer { color: var(--text-muted); font-size: 12px; text-align: center; padding: 8px 0 4px; }
+
+/* ---- Today glance card ---- */
+.app .today-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 16px; }
+.app .today-stat { font-family: var(--font-display); font-weight: 600; font-size: clamp(30px, 7vw, 44px); line-height: 1; color: var(--text); font-variant-numeric: tabular-nums lining-nums; }
+.app .today-stat .unit { font-size: 0.4em; color: var(--accent); margin-left: 4px; }
+.app .today-line { color: var(--text-2); font-size: 14px; margin-top: 8px; line-height: 1.4; }
+.app .today-line .dot { color: var(--color-ink-600); margin: 0 8px; }
+.app .today-tag { color: var(--accent); font-family: var(--font-mono); }
+.app .today-tag.rest { color: var(--color-lime-soft); }
+.app .today-tag.warn { color: var(--color-negative); }
+/* ============================================================================ */
+
+/* ---- Log auto-fill + technique link ---- */
+.app .log-event-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.app .autofill-note { font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+.app .tech-inline-link { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); text-decoration: none; text-transform: uppercase; letter-spacing: 0.04em; }
+.app .tech-inline-link:hover { color: var(--accent); }
+.app .coach-technique-link { display: block; text-align: center; margin: 14px auto 0; color: var(--text-muted); font-family: var(--font-mono); font-size: 13px; text-decoration: none; }
+.app .coach-technique-link:hover { color: var(--accent); }
+/* ============================================================================ */
+
+/* ---- Achievement medals ---- */
+.app .badge-medal { flex: 0 0 auto; width: 48px; height: 48px; border-radius: var(--radius-sm); overflow: hidden; }
+.app .badge-medal img { width: 100%; height: 100%; object-fit: cover; }
+.app .badge-medal.etched { filter: grayscale(1) brightness(0.5); opacity: 0.55; }
+.app .badge-icon-mini img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; display: block; }
+/* ============================================================================ */
+
+/* ---- Achievement progress → lime ---- */
+.app .badges-progress-fill, .app .badge-progress-fill { background: var(--accent); }
+.app .badges-progress-text, .app .badges-count { color: var(--accent); }
+.app .badge-more { color: var(--text-muted); }
+/* ============================================================================ */

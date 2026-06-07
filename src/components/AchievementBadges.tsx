@@ -1,8 +1,23 @@
 'use client';
 
 import { useMemo } from 'react';
+import Image, { type StaticImageData } from 'next/image';
 import { Session } from '@/lib/types';
 import { getUnlockedAchievements, Achievement } from '@/lib/achievements';
+
+import medalMilestone from '@/assets/media/medal-milestone.webp';
+import medalStreak from '@/assets/media/medal-streak.webp';
+import medalCompetition from '@/assets/media/medal-competition.webp';
+import medalVolume from '@/assets/media/medal-volume.webp';
+import medalSpecial from '@/assets/media/medal-special.webp';
+
+const MEDAL: Record<Achievement['category'], StaticImageData> = {
+  milestone: medalMilestone,
+  streak: medalStreak,
+  competition: medalCompetition,
+  volume: medalVolume,
+  special: medalSpecial,
+};
 
 interface AchievementBadgesProps {
   sessions: Session[];
@@ -26,7 +41,7 @@ export default function AchievementBadges({ sessions, compact = false }: Achieve
           <div className="badges-row">
             {unlocked.slice(0, 6).map((a) => (
               <span key={a.id} className="badge-icon-mini" title={a.name}>
-                {a.icon}
+                <Image src={MEDAL[a.category]} alt="" width={28} height={28} />
               </span>
             ))}
             {unlocked.length > 6 && (
@@ -89,8 +104,8 @@ function BadgeCard({
 
   return (
     <div className={`badge-card${unlocked ? ' unlocked' : ' locked'}`}>
-      <div className={`badge-icon${unlocked ? '' : ' grayscale'}`}>
-        {achievement.icon}
+      <div className={`badge-medal${unlocked ? '' : ' etched'}`}>
+        <Image src={MEDAL[achievement.category]} alt="" width={48} height={48} />
       </div>
       <div className="badge-info">
         <div className="badge-name">{achievement.name}</div>

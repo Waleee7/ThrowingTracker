@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://github.com/Waleee7/ThrowingTracker">
-    <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=36&duration=2000&pause=9999&color=F97316&center=true&vCenter=true&repeat=false&width=500&height=50&lines=ThrowingTracker+v2.0" alt="ThrowingTracker v2.0" />
+    <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=36&duration=2000&pause=9999&color=C8FF00&center=true&vCenter=true&repeat=false&width=520&height=50&lines=ThrowingTracker+v3.0" alt="ThrowingTracker v3.0" />
   </a>
 </h1>
 
@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js&logoColor=white" alt="Next.js 15"/>
+  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white" alt="Next.js 16"/>
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19"/>
   <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript"/>
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS"/>
@@ -113,13 +113,18 @@ Deploy: connect to Vercel or build with <code>npm run build</code> and deploy /o
   <li>Special: Multi-Event Athlete, Full Season Tracker</li>
 </ul>
 
+<h2>🎨 Design (v3.0 — Broadcast Sports Editorial)</h2>
+<p>
+v3 rebuilds the visual system around a TV-broadcast athletics aesthetic: a dark-ink default register with a rationed electric-lime accent, Fraunces display headlines, JetBrains Mono data/eyebrows, and big tabular stat numbers. Personal bests read as the live signal (lime), every event has its own identity hue, and the dashboard, onboarding, and Season Wrapped are anchored by cinematic, baked-in imagery. A clean paper register is one tap away. The whole thing is token-driven (Tailwind v4 <code>@theme</code>), so light/dark stay in sync and the palette lives in one place.
+</p>
+
 <h2>🛠️ Tech Stack</h2>
 <table>
 <tr>
-  <td align="center"><strong>Framework</strong><br/>Next.js 15 with App Router, static export, Vercel integration.</td>
+  <td align="center"><strong>Framework</strong><br/>Next.js 16 with App Router, serverless coach route, Vercel integration.</td>
   <td align="center"><strong>Language</strong><br/>TypeScript strict mode, type safety across data & analytics.</td>
   <td align="center"><strong>UI</strong><br/>React 19, component architecture, hooks for state management.</td>
-  <td align="center"><strong>Styling</strong><br/>Tailwind CSS v4, ~2000 lines, dark mode ready.</td>
+  <td align="center"><strong>Styling</strong><br/>Tailwind CSS v4 token system (Broadcast Sports Editorial), dark-first + paper registers.</td>
 </tr>
 <tr>
   <td align="center"><strong>Charts</strong><br/>Recharts — line, bar, composed charts.</td>

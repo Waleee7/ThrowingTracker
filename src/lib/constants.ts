@@ -53,7 +53,14 @@ export const DEFAULT_PROFILE = {
   distanceUnit: 'm' as const,
 };
 
-export const SECTOR_ANGLE_DEG = 34.92;
+export const SECTOR_ANGLE_DEG = 34.92; // shot, discus, hammer, weight throw (circle events)
+export const JAVELIN_SECTOR_ANGLE_DEG = 28.96; // javelin lands in a narrower sector
+
+/** Regulation landing-sector angle (degrees) for an event. Circle events
+ *  (shot/discus/hammer/weight) use 34.92°; javelin uses 28.96°. */
+export function sectorAngleForEvent(eventId?: string | null): number {
+  return eventId === 'javelin' ? JAVELIN_SECTOR_ANGLE_DEG : SECTOR_ANGLE_DEG;
+}
 
 // Per-event broadcast hues. KEEP these keys (JS contract: EVENT_COLORS keys).
 export const EVENT_COLORS: Record<string, string> = {

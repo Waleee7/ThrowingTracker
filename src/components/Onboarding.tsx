@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Profile } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
+import { kgToLbs } from '@/lib/units';
 import { AppLogo } from '@/components/Icons';
 import splashOnboarding from '@/assets/media/splash-onboarding.webp';
 
@@ -346,6 +347,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 const implementKg = grade && sex
                   ? getRecommendedImplementKg(ev.id as EventId, grade, sex)
                   : null;
+                const implementLb =
+                  implementKg != null ? Math.round(kgToLbs(implementKg) * 10) / 10 : null;
+                const implementLbStr =
+                  implementLb == null
+                    ? ''
+                    : Number.isInteger(implementLb)
+                      ? String(implementLb)
+                      : implementLb.toFixed(1);
                 const isSelected = selectedEvents.includes(ev.id);
                 const hue = EVENT_HUE_VAR[ev.id];
                 return (
@@ -369,7 +378,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     />
                     <span className="onboarding-event-name">{ev.name}</span>
                     {implementKg != null && (
-                      <span className="onboarding-event-implement">{implementKg}kg</span>
+                      <span className="onboarding-event-implement">{implementLbStr} lb · {implementKg} kg</span>
                     )}
                     {isSelected && (
                       <span className="onboarding-check" style={hue ? { color: hue } : undefined}>&#10003;</span>

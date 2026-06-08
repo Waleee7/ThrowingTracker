@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Session, Profile, SessionType, MediaAttachment, ThrowEntry, LandingPoint } from '@/lib/types';
-import { EVENTS, RPE_SCALE, RPE_EMOJI } from '@/lib/constants';
+import { EVENTS, RPE_SCALE, RPE_EMOJI, sectorAngleForEvent } from '@/lib/constants';
 import { toLocalDateKey } from '@/lib/dates';
 import { formatDistance, parseDistanceToMeters } from '@/lib/units';
 import { storeMedia, deleteMedia } from '@/lib/media-storage';
@@ -551,6 +551,7 @@ export default function LogTab({ profile, onSave, editSession, onCancelEdit, ses
             <SectorMap
               key={event || 'na'}
               sectorDepth={sectorDepthDefault}
+              sectorAngle={sectorAngleForEvent(event)}
               distanceUnit={distanceUnit}
               points={landingPoints}
               onAddPoint={addLandingThrow}

@@ -7,6 +7,7 @@ import { getChartTheme, heatStop, type ChartTheme } from '@/lib/theme';
 
 interface SectorMapProps {
   sectorDepth: number; // meters
+  sectorAngle?: number; // regulation sector angle (deg); defaults to 34.92 (circle events)
   points: LandingPoint[];
   distanceUnit?: DistanceUnit;
   onAddPoint?: (point: LandingPoint) => void;
@@ -27,6 +28,7 @@ const CIRCLE_X = CANVAS_WIDTH / 2;
 
 export default function SectorMap({
   sectorDepth,
+  sectorAngle = SECTOR_ANGLE,
   points,
   distanceUnit = 'm',
   onAddPoint,
@@ -69,7 +71,7 @@ export default function SectorMap({
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // Sector lines
-    const halfAngle = (SECTOR_ANGLE / 2) * (Math.PI / 180);
+    const halfAngle = (sectorAngle / 2) * (Math.PI / 180);
     const sectorLength = CIRCLE_Y - 20;
 
     ctx.strokeStyle = theme.ring;
@@ -151,7 +153,7 @@ export default function SectorMap({
         }
       }
     }
-  }, [points, depth, metersPerPixel, colorMode, overlayPoints, overlayColors, distanceUnit]);
+  }, [points, depth, metersPerPixel, colorMode, overlayPoints, overlayColors, distanceUnit, sectorAngle]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -190,7 +192,7 @@ export default function SectorMap({
 
     // Check if within sector
     const angle = Math.atan2(Math.abs(dx), dy) * (180 / Math.PI);
-    if (angle > SECTOR_ANGLE / 2 || y > CIRCLE_Y) return;
+    if (angle > sectorAngle / 2 || y > CIRCLE_Y) return;
 
     onAddPoint({ x, y, distance });
   };
@@ -214,7 +216,7 @@ export default function SectorMap({
     const distance = Math.round(pixelDistance * metersPerPixel * 100) / 100;
 
     const angle = Math.atan2(Math.abs(dx), dy) * (180 / Math.PI);
-    if (angle > SECTOR_ANGLE / 2 || y > CIRCLE_Y) return;
+    if (angle > sectorAngle / 2 || y > CIRCLE_Y) return;
 
     onAddPoint({ x, y, distance });
   };
@@ -223,7 +225,7 @@ export default function SectorMap({
     <div className="sector-map">
       {!readOnly && (
         <div className="sector-controls">
-          <label className="label">Sector Depth (m)</label>
+          <label className="label">Max sector length (m)</label>
           <input
             type="number"
             className="input-small"

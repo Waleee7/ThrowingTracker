@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Profile } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
+import { type DistanceUnit, parseDistanceToMeters } from '@/lib/units';
 import { AppLogo } from '@/components/Icons';
 import splashOnboarding from '@/assets/media/splash-onboarding.webp';
 
@@ -64,6 +65,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
   const [prs, setPRs] = useState<Record<string, string>>({});
   const [goals, setGoals] = useState<AthleteGoal[]>([]);
+  // How the athlete reads a tape: US default ft+in, smart-set from body units.
+  const [markUnit, setMarkUnit] = useState<DistanceUnit>('ft');
+
+  // Imperial body units almost always means feet-and-inches marks (US HS/college).
+  const advanceFromBody = () => {
+    setMarkUnit(heightUnit === 'cm' || weightUnit === 'kg' ? 'm' : 'ft');
+    setStep(3);
+  };
 
   const toggleEvent = (id: string) => {
     setSelectedEvents(prev =>
@@ -81,7 +90,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     for (const evId of selectedEvents) {
       const raw = prs[evId];
       if (!raw) continue;
-      const mark = parseFloat(raw);
+      const mark = parseDistanceToMeters(raw, markUnit); // canonical meters
       if (!isFinite(mark) || mark <= 0) continue;
       const implementKg = getRecommendedImplementKg(evId as EventId, grade, sex);
       if (implementKg == null) continue;
@@ -113,6 +122,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       height: heightPayload,
       weight: { value: weightValue, unit: weightUnit },
       notes: '',
+      distanceUnit: markUnit,
       grade: (grade || undefined) as GradeLevel | undefined,
       goals,
       prs: buildPRs(),
@@ -326,10 +336,10 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
               placeholder={`Weight (${weightUnit})`}
               style={{ marginTop: 8 }}
             />
-            <button className="onboarding-btn primary" onClick={() => setStep(3)}>
+            <button className="onboarding-btn primary" onClick={advanceFromBody}>
               Continue
             </button>
-            <button className="onboarding-btn text" onClick={() => setStep(3)}>
+            <button className="onboarding-btn text" onClick={advanceFromBody}>
               Skip
             </button>
           </div>
@@ -392,8 +402,22 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           <div className="onboarding-step">
             <h2 className="onboarding-step-title">Where you&apos;re at + going</h2>
             <p className="onboarding-step-desc">
-              Drop your current PR per event (meters), and what you&apos;re training for.
+              Drop your current PR per event, and what you&apos;re training for.
             </p>
+            <div className="onboarding-row" style={{ marginBottom: 10 }}>
+              <button
+                className={`onboarding-pill${markUnit === 'ft' ? ' selected' : ''}`}
+                onClick={() => setMarkUnit('ft')}
+              >
+                ft + in
+              </button>
+              <button
+                className={`onboarding-pill${markUnit === 'm' ? ' selected' : ''}`}
+                onClick={() => setMarkUnit('m')}
+              >
+                meters
+              </button>
+            </div>
             <div className="onboarding-pr-list">
               {selectedEvents.map(evId => {
                 const ev = EVENTS.find(e => e.id === evId);
@@ -402,11 +426,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     <span style={{ minWidth: 90 }}>{ev?.name}</span>
                     <input
                       className="onboarding-input"
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode={markUnit === 'm' ? 'decimal' : undefined}
                       value={prs[evId] || ''}
                       onChange={e => setPRs(p => ({ ...p, [evId]: e.target.value }))}
-                      placeholder="PR (m) — leave blank if new"
+                      placeholder={markUnit === 'ft' ? "PR (e.g. 41' 6) — blank if new" : 'PR (m) — blank if new'}
                     />
                   </div>
                 );

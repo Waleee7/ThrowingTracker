@@ -86,14 +86,26 @@ export function CoachIcon({ size = 24, className }: IconProps) {
   );
 }
 
+// Technique: trajectory broken into phase checkpoints — the form library
+export function TechniqueIcon({ size = 24, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M3 19Q7 5 21 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" strokeDasharray="0.1 4.2" />
+      <circle cx="3" cy="19" r="2" fill="currentColor" />
+      <circle cx="9.5" cy="8.5" r="2" stroke="currentColor" strokeWidth="2" />
+      <circle cx="21" cy="5" r="2" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  );
+}
+
 // App Logo: Throwing circle with sector lines and an implement trajectory
 export function AppLogo({ size = 32, className }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" className={className}>
       <defs>
         <linearGradient id="logoGrad" x1="0" y1="0" x2="48" y2="48">
-          <stop offset="0%" stopColor="#2f5575" />
-          <stop offset="100%" stopColor="#26506f" />
+          <stop offset="0%" stopColor="#FF5A1F" />
+          <stop offset="100%" stopColor="#CF4015" />
         </linearGradient>
       </defs>
       {/* Background circle */}

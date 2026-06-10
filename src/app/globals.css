@@ -50,15 +50,16 @@
 
   /* Semantic */
   --color-pb:       #C8FF00;
+  --color-on-pb:    #0A0A0B;
   --color-sb:       #A3E635;
   --color-positive: #4ADE80;
   --color-negative: #FB7185;
   --color-foul:     #71717A;
 
-  /* Type families (already loaded in layout.tsx) */
-  --font-display: 'Anton', 'Archivo', 'Inter', sans-serif;
-  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-mono:    'JetBrains Mono', ui-monospace, Menlo, monospace;
+  /* Type families (self-hosted via next/font in layout.tsx) */
+  --font-display: var(--font-anton), 'Anton', sans-serif;
+  --font-sans:    var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono:    var(--font-jbmono), 'JetBrains Mono', ui-monospace, Menlo, monospace;
 
   /* Radius */
   --radius-xs: 4px; --radius-sm: 8px; --radius-md: 12px;
@@ -97,6 +98,8 @@
   --text-2:     #23272E;
   --text-muted: #6B7280;
   --accent:     var(--color-orange);
+  /* PB lime drops to a darker register on white — #C8FF00 is invisible on paper */
+  --color-pb:   #65A30D;
   --scrim:      linear-gradient(0deg, rgba(10,10,11,0.78) 0%, rgba(10,10,11,0.30) 60%, rgba(10,10,11,0.10) 100%);
 }
 
@@ -151,14 +154,14 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #2f5575 0%, #26506f 100%);
+  background: var(--bg);
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

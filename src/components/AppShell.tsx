@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import {
-  AppLogo, DashboardIcon, ProfileIcon, LogIcon, HistoryIcon, ProgressIcon, CoachIcon, SunIcon, MoonIcon,
+  AppLogo, DashboardIcon, ProfileIcon, LogIcon, HistoryIcon, ProgressIcon, CoachIcon, TechniqueIcon, SunIcon, MoonIcon,
 } from '@/components/Icons';
 import Onboarding from '@/components/Onboarding';
 import MeetDayMode from '@/components/MeetDayMode';
@@ -17,13 +17,16 @@ import AchievementToast from '@/components/AchievementToast';
 import SeasonWrapped from '@/components/SeasonWrapped';
 import { getEffectiveLevel } from '@/lib/athlete-level';
 
+// Most-used first so they stay visible if a narrow screen scrolls the row;
+// Profile holds the conventional last slot.
 const NAV = [
   { href: '/', label: 'Dashboard', Icon: DashboardIcon },
-  { href: '/coach', label: 'Coach', Icon: CoachIcon },
-  { href: '/profile', label: 'Profile', Icon: ProfileIcon },
   { href: '/log', label: 'Log', Icon: LogIcon },
-  { href: '/history', label: 'History', Icon: HistoryIcon },
+  { href: '/coach', label: 'Coach', Icon: CoachIcon },
+  { href: '/technique', label: 'Technique', Icon: TechniqueIcon },
   { href: '/progress', label: 'Progress', Icon: ProgressIcon },
+  { href: '/history', label: 'History', Icon: HistoryIcon },
+  { href: '/profile', label: 'Profile', Icon: ProfileIcon },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {

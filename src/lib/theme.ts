@@ -83,8 +83,10 @@ export function getChartTheme(): ChartTheme {
     ring: readVar(s, key === 'dark' ? '--color-ink-600' : '--border', FALLBACK.ring),
     fg: readVar(s, '--color-fg', FALLBACK.fg),
     fgMuted: readVar(s, key === 'dark' ? '--color-fg-muted' : '--text-muted', FALLBACK.fgMuted),
-    lime: readVar(s, '--color-lime', FALLBACK.lime),
-    onLime: readVar(s, '--color-on-lime', FALLBACK.onLime),
+    // PB signal reads --color-pb, NOT --color-lime: the lime token was remapped
+    // to the orange house accent (PR #3), which made PB marks orange-on-orange.
+    lime: readVar(s, '--color-pb', FALLBACK.lime),
+    onLime: readVar(s, '--color-on-pb', FALLBACK.onLime),
     positive: readVar(s, '--color-positive', FALLBACK.positive),
     negative: readVar(s, '--color-negative', FALLBACK.negative),
     foul: readVar(s, '--color-foul', FALLBACK.foul),

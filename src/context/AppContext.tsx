@@ -64,6 +64,18 @@ interface AppContextValue {
   closeWrapped: () => void;
 }
 
+// Keep the browser-chrome color in sync with the active register. The meta tag
+// is created pre-paint by the inline script in layout.tsx; this updates it.
+function syncThemeColorMeta(dark: boolean) {
+  let el = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+  if (!el) {
+    el = document.createElement('meta');
+    el.name = 'theme-color';
+    document.head.appendChild(el);
+  }
+  el.content = dark ? '#0A0A0B' : '#FFFFFF';
+}
+
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function useApp(): AppContextValue {
@@ -104,10 +116,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [profileLoaded, sessionsLoaded, profile.name, sessions.length]);
 
   useEffect(() => {
-    if (storage.getDarkMode()) {
+    const dark = storage.getDarkMode();
+    if (dark) {
       setDarkMode(true);
       document.documentElement.classList.add('dark');
     }
+    syncThemeColorMeta(dark);
   }, []);
 
   const toggleDarkMode = useCallback(() => {
@@ -115,6 +129,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const next = !prev;
       document.documentElement.classList.toggle('dark', next);
       storage.setDarkMode(next);
+      syncThemeColorMeta(next);
       return next;
     });
   }, []);

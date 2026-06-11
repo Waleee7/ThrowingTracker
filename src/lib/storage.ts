@@ -1,10 +1,14 @@
-import { Profile, Session } from './types';
+import { Profile, Session, Meet, GoalMark } from './types';
 
 const PROFILE_KEY = 'throwingProfile';
 const SESSIONS_KEY = 'throwingSessions';
 const LAST_EXPORT_KEY = 'throwingLastExport';
 const DARK_MODE_KEY = 'throwingDarkMode';
 const SCHEMA_VERSION_KEY = 'throwingSchemaVersion';
+const MEETS_KEY = 'throwingMeets';
+const GOALS_KEY = 'throwingGoalMarks';
+const RECAP_ENABLED_KEY = 'throwingRecapEnabled';
+const RECAP_LAST_SHOWN_KEY = 'throwingRecapLastShown';
 const SCHEMA_VERSION = 3;
 
 function get<T>(key: string): T | null {
@@ -42,6 +46,18 @@ export const storage = {
   getDarkMode: (): boolean => get<boolean>(DARK_MODE_KEY) ?? false,
   setDarkMode: (enabled: boolean) => set(DARK_MODE_KEY, enabled),
 
+  getMeets: (): Meet[] => get<Meet[]>(MEETS_KEY) || [],
+  setMeets: (meets: Meet[]) => set(MEETS_KEY, meets),
+
+  getGoalMarks: (): GoalMark[] => get<GoalMark[]>(GOALS_KEY) || [],
+  setGoalMarks: (goals: GoalMark[]) => set(GOALS_KEY, goals),
+
+  // Weekly recap preferences (defaults ON; athlete can disable in Profile).
+  getRecapEnabled: (): boolean => get<boolean>(RECAP_ENABLED_KEY) ?? true,
+  setRecapEnabled: (enabled: boolean) => set(RECAP_ENABLED_KEY, enabled),
+  getRecapLastShown: (): string | null => get<string>(RECAP_LAST_SHOWN_KEY),
+  setRecapLastShown: (weekKey: string) => set(RECAP_LAST_SHOWN_KEY, weekKey),
+
   getSchemaVersion: (): number => get<number>(SCHEMA_VERSION_KEY) ?? 0,
   migrate: () => {
     if (typeof window === 'undefined') return;
@@ -65,7 +81,10 @@ export const storage = {
 
   clearAll: () => {
     if (typeof window === 'undefined') return;
-    [PROFILE_KEY, SESSIONS_KEY, LAST_EXPORT_KEY, DARK_MODE_KEY, SCHEMA_VERSION_KEY].forEach((k) =>
+    [
+      PROFILE_KEY, SESSIONS_KEY, LAST_EXPORT_KEY, DARK_MODE_KEY, SCHEMA_VERSION_KEY,
+      MEETS_KEY, GOALS_KEY, RECAP_ENABLED_KEY, RECAP_LAST_SHOWN_KEY,
+    ].forEach((k) =>
       localStorage.removeItem(k),
     );
   },

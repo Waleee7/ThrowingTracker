@@ -82,6 +82,18 @@ export default function TechniqueLibrary({ initialEvent }: { initialEvent?: stri
               <span className="tech-phase-num">{String(i + 1).padStart(2, '0')}</span>
               <span className="tech-phase-name">{p.name}</span>
             </div>
+            {p.video && (
+              <video
+                className="tech-phase-video"
+                src={p.video}
+                muted
+                loop
+                playsInline
+                autoPlay
+                preload="metadata"
+                aria-label={`${p.name} form demo`}
+              />
+            )}
             <ul className="tech-cues">
               {p.cues.map((c, j) => <li key={j} className="tech-cue">{c}</li>)}
             </ul>

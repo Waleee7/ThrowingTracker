@@ -7,6 +7,7 @@ import { Session, Profile } from '@/lib/types';
 import { formatDistance } from '@/lib/units';
 import { calculateStreak } from '@/lib/analytics';
 import { computeReadiness } from '@/lib/readiness';
+import { useCountUp } from '@/hooks/useCountUp';
 
 export default function TodayCard({ sessions, profile }: { sessions: Session[]; profile: Profile }) {
   const unit = profile.distanceUnit ?? 'm';
@@ -17,8 +18,10 @@ export default function TodayCard({ sessions, profile }: { sessions: Session[]; 
     ? sessions.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
     : null;
 
-  // Hero stat: last session's best mark (the number the athlete cares about today).
-  const heroMark = last ? formatDistance(last.bestMark, unit, { withUnit: false }) : '—';
+  // Hero stat counts up scoreboard-style (animates the canonical meters, then
+  // formats each frame so ft+in strings stay correct mid-flight).
+  const animatedMark = useCountUp(last ? last.bestMark : 0);
+  const heroMark = last ? formatDistance(animatedMark, unit, { withUnit: false }) : '—';
   const heroUnit = unit === 'ft' ? '' : 'm';
 
   // Readiness → a one-word call to action.

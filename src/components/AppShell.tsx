@@ -15,6 +15,7 @@ import MeetDayMode from '@/components/MeetDayMode';
 import PRAlert from '@/components/PRAlert';
 import AchievementToast from '@/components/AchievementToast';
 import SeasonWrapped from '@/components/SeasonWrapped';
+import WeeklyRecap from '@/components/WeeklyRecap';
 import { getEffectiveLevel } from '@/lib/athlete-level';
 
 // Most-used first so they stay visible if a narrow screen scrolls the row;
@@ -117,7 +118,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
           previousBest={app.prAlert.previousBest}
           distanceUnit={app.distanceUnit}
           confetti={getEffectiveLevel(app.profile) === 'rookie'}
+          athleteName={app.profile.name}
           onClose={app.dismissPrAlert}
+        />
+      )}
+
+      {app.showRecap && app.recapData && (
+        <WeeklyRecap
+          data={app.recapData}
+          distanceUnit={app.distanceUnit}
+          athleteName={app.profile.name}
+          onClose={app.closeRecap}
         />
       )}
 

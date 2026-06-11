@@ -8,6 +8,12 @@ export interface TechniquePhase {
   name: string;
   /** 2–4 concrete coaching cues. Imperative, specific, no fluff. */
   cues: string[];
+  /**
+   * Phase 2 media seam: a short muted looping clip of this phase. Drop files at
+   * /public/media/technique/<event>/<phase>.mp4 and set the path here — the
+   * library renders the clip above the cues with zero further code changes.
+   */
+  video?: string;
 }
 
 export interface TechniqueVariation {

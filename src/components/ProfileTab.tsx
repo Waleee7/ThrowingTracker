@@ -2,12 +2,14 @@
 
 import { useState, useRef } from 'react';
 import { Profile } from '@/lib/types';
-import type { DistanceUnit } from '@/lib/units';
+import { formatDistance, parseDistanceToMeters, type DistanceUnit } from '@/lib/units';
 import { EVENTS, HEIGHT_UNITS, WEIGHT_UNITS, DISTANCE_UNITS } from '@/lib/constants';
 import { exportToJSON, exportToCSV, importFromJSON } from '@/lib/export';
 import { loadSampleData } from '@/lib/seed';
 import { storage } from '@/lib/storage';
 import { clearAllMedia } from '@/lib/media-storage';
+import { toLocalDateKey } from '@/lib/dates';
+import { useApp } from '@/context/AppContext';
 
 interface ProfileTabProps {
   profile: Profile;
@@ -16,7 +18,11 @@ interface ProfileTabProps {
 }
 
 export default function ProfileTab({ profile, onSave, onDataImported }: ProfileTabProps) {
+  const app = useApp();
   const [name, setName] = useState(profile.name);
+  const [meetName, setMeetName] = useState('');
+  const [meetDate, setMeetDate] = useState('');
+  const [goalInputs, setGoalInputs] = useState<Record<string, string>>({});
   const [heightValue, setHeightValue] = useState(profile.height.value);
   const [heightUnit, setHeightUnit] = useState(profile.height.unit);
   const [heightFeet, setHeightFeet] = useState(profile.height.feet || '');
@@ -259,6 +265,26 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
             ))}
           </div>
         </div>
+        <div className="form-group">
+          <label className="label">Weekly Recap</label>
+          <div className="toggle-group">
+            <button
+              type="button"
+              className={`toggle-button${app.recapEnabled ? ' active' : ''}`}
+              onClick={() => app.setRecapEnabled(true)}
+            >
+              On
+            </button>
+            <button
+              type="button"
+              className={`toggle-button${!app.recapEnabled ? ' active' : ''}`}
+              onClick={() => app.setRecapEnabled(false)}
+            >
+              Off
+            </button>
+          </div>
+          <p className="field-hint">A &ldquo;Your Week&rdquo; summary the first time you open the app each week.</p>
+        </div>
       </section>
 
       {/* Events */}
@@ -279,6 +305,128 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
               <span className="event-name">{event.name}</span>
             </button>
           ))}
+        </div>
+      </section>
+
+      {/* Goals & Meets — the stakes that drive the dashboard countdown */}
+      <section className="profile-section">
+        <h3 className="profile-section-title">Goals &amp; Meets</h3>
+
+        <div className="form-group">
+          <label className="label">Upcoming Meets</label>
+          {app.meets.length > 0 && (
+            <ul className="meet-list">
+              {app.meets
+                .slice()
+                .sort((a, b) => (a.date < b.date ? -1 : 1))
+                .map((m) => {
+                  const past = m.date < toLocalDateKey();
+                  return (
+                    <li key={m.id} className={`meet-row${past ? ' past' : ''}`}>
+                      <span className="meet-row-name">{m.name}</span>
+                      <span className="meet-row-date tnum">
+                        {new Date(m.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                      <button
+                        type="button"
+                        className="meet-remove"
+                        onClick={() => app.removeMeet(m.id)}
+                        aria-label={`Remove ${m.name}`}
+                      >
+                        ×
+                      </button>
+                    </li>
+                  );
+                })}
+            </ul>
+          )}
+          <div className="meet-add">
+            <input
+              type="text"
+              className="input"
+              value={meetName}
+              onChange={(e) => setMeetName(e.target.value)}
+              placeholder="Meet name (e.g. State Championship)"
+            />
+            <div className="meet-add-row">
+              <input
+                type="date"
+                className="input meet-date-input"
+                value={meetDate}
+                onChange={(e) => setMeetDate(e.target.value)}
+                aria-label="Meet date"
+              />
+              <button
+                type="button"
+                className="secondary-button"
+                disabled={!meetName.trim() || !meetDate}
+                onClick={() => {
+                  app.addMeet(meetName, meetDate);
+                  setMeetName('');
+                  setMeetDate('');
+                }}
+              >
+                Add
+              </button>
+            </div>
+          </div>
+          <p className="field-hint">Your next meet shows as a countdown on the dashboard.</p>
+        </div>
+
+        <div className="form-group">
+          <label className="label">Goal Marks ({distanceUnit === 'ft' ? 'ft + in' : 'meters'})</label>
+          {events.length === 0 ? (
+            <p className="field-hint">Pick your events above to set goal marks.</p>
+          ) : (
+            <div className="goal-edit-list">
+              {events.map((evId) => {
+                const ev = EVENTS.find((e) => e.id === evId);
+                const existing = app.goalMarks.find((g) => g.event === evId);
+                const draft =
+                  goalInputs[evId] ??
+                  (existing ? formatDistance(existing.targetMark, distanceUnit, { withUnit: false }) : '');
+                return (
+                  <div key={evId} className="goal-edit-row">
+                    <span className="goal-edit-event">{ev?.name || evId}</span>
+                    <input
+                      type="text"
+                      inputMode={distanceUnit === 'm' ? 'decimal' : undefined}
+                      className="input goal-edit-input"
+                      value={draft}
+                      onChange={(e) => setGoalInputs((p) => ({ ...p, [evId]: e.target.value }))}
+                      placeholder={distanceUnit === 'ft' ? "e.g. 199' 6" : 'e.g. 60.96'}
+                    />
+                    <button
+                      type="button"
+                      className="secondary-button goal-edit-set"
+                      onClick={() => {
+                        const meters = parseDistanceToMeters(draft, distanceUnit);
+                        const valid = isFinite(meters) && meters > 0;
+                        app.setGoalMark(evId, valid ? meters : null);
+                        if (!valid) setGoalInputs((p) => ({ ...p, [evId]: '' }));
+                      }}
+                    >
+                      {existing ? 'Update' : 'Set'}
+                    </button>
+                    {existing && (
+                      <button
+                        type="button"
+                        className="meet-remove"
+                        aria-label={`Clear ${ev?.name || evId} goal`}
+                        onClick={() => {
+                          app.setGoalMark(evId, null);
+                          setGoalInputs((p) => ({ ...p, [evId]: '' }));
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <p className="field-hint">Goal progress bars appear on your dashboard.</p>
         </div>
       </section>
 

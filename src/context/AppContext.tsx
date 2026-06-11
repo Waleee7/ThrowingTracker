@@ -6,7 +6,7 @@
 // /log updates the same store the dashboard reads.
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { TabId, Session, Profile } from '@/lib/types';
+import { TabId, Session, Profile, Meet, GoalMark } from '@/lib/types';
 import { type DistanceUnit } from '@/lib/units';
 import { useProfile } from '@/hooks/useProfile';
 import { useSessions } from '@/hooks/useSessions';
@@ -16,6 +16,9 @@ import { calculateStreak } from '@/lib/analytics';
 import { storage } from '@/lib/storage';
 import { deleteMedia } from '@/lib/media-storage';
 import { loadSampleData } from '@/lib/seed';
+import { setGoal } from '@/lib/goals';
+import { buildWeeklyRecap, type WeeklyRecapData } from '@/lib/recap';
+import { weekStartKey } from '@/lib/dates';
 
 const TAB_PATHS: Record<TabId, string> = {
   dashboard: '/',
@@ -62,6 +65,18 @@ interface AppContextValue {
   showWrapped: boolean;
   startWrapped: () => void;
   closeWrapped: () => void;
+  // Goals & meets (the stakes layer)
+  meets: Meet[];
+  addMeet: (name: string, date: string) => void;
+  removeMeet: (id: string) => void;
+  goalMarks: GoalMark[];
+  setGoalMark: (event: string, targetMark: number | null) => void;
+  // Weekly recap
+  recapEnabled: boolean;
+  setRecapEnabled: (on: boolean) => void;
+  recapData: WeeklyRecapData | null;
+  showRecap: boolean;
+  closeRecap: () => void;
 }
 
 // Keep the browser-chrome color in sync with the active register. The meta tag
@@ -96,8 +111,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [achievementToasts, setAchievementToasts] = useState<Achievement[]>([]);
   const unlockedIdsRef = useRef<string[]>([]);
+  const [meets, setMeets] = useState<Meet[]>([]);
+  const [goalMarks, setGoalMarks] = useState<GoalMark[]>([]);
+  const [recapEnabled, setRecapEnabledState] = useState(true);
+  const [showRecap, setShowRecap] = useState(false);
+  const [recapData, setRecapData] = useState<WeeklyRecapData | null>(null);
 
   const loaded = profileLoaded && sessionsLoaded;
+
+  // Hydrate the stakes layer + recap preference from storage.
+  useEffect(() => {
+    setMeets(storage.getMeets());
+    setGoalMarks(storage.getGoalMarks());
+    setRecapEnabledState(storage.getRecapEnabled());
+  }, []);
+
+  // Weekly recap: first open in a new week (when enabled) recaps last week.
+  useEffect(() => {
+    if (!loaded || !recapEnabled || sessions.length === 0) return;
+    const currentWeek = weekStartKey(new Date());
+    if (storage.getRecapLastShown() === currentWeek) return;
+    const data = buildWeeklyRecap(sessions);
+    if (data) {
+      setRecapData(data);
+      setShowRecap(true);
+    } else {
+      // nothing to recap — don't re-check until next week
+      storage.setRecapLastShown(currentWeek);
+    }
+  }, [loaded, recapEnabled, sessions]);
 
   // Track which achievements are already unlocked (so new ones can toast).
   useEffect(() => {
@@ -195,6 +237,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const closeWrapped = useCallback(() => setShowWrapped(false), []);
   const dismissPrAlert = useCallback(() => setPrAlert(null), []);
 
+  const addMeet = useCallback((name: string, date: string) => {
+    setMeets((prev) => {
+      const meet: Meet = {
+        id: `meet-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: name.trim(),
+        date,
+      };
+      const next = [...prev, meet];
+      storage.setMeets(next);
+      return next;
+    });
+  }, []);
+
+  const removeMeet = useCallback((id: string) => {
+    setMeets((prev) => {
+      const next = prev.filter((m) => m.id !== id);
+      storage.setMeets(next);
+      return next;
+    });
+  }, []);
+
+  const setGoalMark = useCallback((event: string, targetMark: number | null) => {
+    setGoalMarks((prev) => {
+      const next = setGoal(prev, event, targetMark);
+      storage.setGoalMarks(next);
+      return next;
+    });
+  }, []);
+
+  const setRecapEnabled = useCallback((on: boolean) => {
+    setRecapEnabledState(on);
+    storage.setRecapEnabled(on);
+  }, []);
+
+  const closeRecap = useCallback(() => {
+    setShowRecap(false);
+    storage.setRecapLastShown(weekStartKey(new Date()));
+  }, []);
+
   const distanceUnit = (profile.distanceUnit ?? 'm') as DistanceUnit;
   const streak = calculateStreak(sessions);
   const priorBestByEvent: Record<string, number> = {};
@@ -210,6 +291,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     prAlert, dismissPrAlert,
     achievementToasts, dismissToast,
     showWrapped, startWrapped, closeWrapped,
+    meets, addMeet, removeMeet, goalMarks, setGoalMark,
+    recapEnabled, setRecapEnabled, recapData, showRecap, closeRecap,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

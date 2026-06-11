@@ -91,6 +91,19 @@ export interface EventStats {
   totalThrows: number;
 }
 
+// An upcoming competition the athlete is pointing at (drives the dashboard countdown).
+export interface Meet {
+  id: string;
+  name: string;
+  date: string; // local 'YYYY-MM-DD' date key
+}
+
+// A target mark the athlete wants to hit. Stored canonical meters, like all marks.
+export interface GoalMark {
+  event: string;
+  targetMark: number; // meters
+}
+
 export type TabId = 'dashboard' | 'profile' | 'log' | 'history' | 'progress';
 export type HistoryView = 'recent' | 'weekly' | 'monthly';
 export type SessionType = 'training' | 'competition';

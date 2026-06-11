@@ -2,9 +2,11 @@
 
 import { Session } from '@/lib/types';
 import { computeReadiness } from '@/lib/readiness';
+import { useCountUp } from '@/hooks/useCountUp';
 
 export default function ReadinessCard({ sessions }: { sessions: Session[] }) {
   const r = computeReadiness(sessions);
+  const animatedScore = useCountUp(r.available ? r.score : 0);
   const tone = !r.available
     ? 'muted'
     : r.score >= 80
@@ -18,7 +20,7 @@ export default function ReadinessCard({ sessions }: { sessions: Session[] }) {
   return (
     <div className={`readiness-card readiness-${tone}`}>
       <div className="readiness-score-wrap">
-        <span className="readiness-score">{r.available ? r.score : '—'}</span>
+        <span className="readiness-score">{r.available ? Math.round(animatedScore) : '—'}</span>
         {r.available && <span className="readiness-max">/100</span>}
       </div>
       <div className="readiness-info">

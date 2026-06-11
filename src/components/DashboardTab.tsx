@@ -13,6 +13,10 @@ import EmptyState from '@/components/EmptyState';
 import ReadinessCard from '@/components/ReadinessCard';
 import HeroMedia from '@/components/HeroMedia';
 import TodayCard from '@/components/TodayCard';
+import GoalCountdownCard from '@/components/GoalCountdownCard';
+import { ShareIcon } from '@/components/Icons';
+import { shareCard } from '@/lib/share-card';
+import { vibrate } from '@/lib/haptics';
 
 interface DashboardTabProps {
   sessions: Session[];
@@ -104,6 +108,9 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
           {/* Glanceable status — answers "what's my status today?" in <10s */}
           <TodayCard sessions={sessions} profile={profile} />
 
+          {/* Stakes: next meet countdown + goal progress (set in Profile) */}
+          <GoalCountdownCard />
+
           {/* Hero — broadcast stat-channel over event-specific cinematic still */}
           <HeroMedia className="dash-hero" event={lastSession?.event} priority>
             <div className="dash-hero-top">
@@ -188,7 +195,7 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
                   const event = EVENTS.find((e) => e.id === pb.event);
                   const seasonPB = seasonPBs.find((s) => s.event === pb.event);
                   return (
-                    <PBCard key={pb.event} pb={pb} seasonPB={seasonPB} eventName={event?.name || pb.event} distanceUnit={distanceUnit} />
+                    <PBCard key={pb.event} pb={pb} seasonPB={seasonPB} eventName={event?.name || pb.event} distanceUnit={distanceUnit} athleteName={profile.name} />
                   );
                 })}
               </div>
@@ -207,9 +214,30 @@ export default function DashboardTab({ sessions, profile, onNavigate, onStartMee
   );
 }
 
-function PBCard({ pb, seasonPB, eventName, distanceUnit }: { pb: PersonalBest; seasonPB?: PersonalBest; eventName: string; distanceUnit: DistanceUnit }) {
+function PBCard({ pb, seasonPB, eventName, distanceUnit, athleteName }: { pb: PersonalBest; seasonPB?: PersonalBest; eventName: string; distanceUnit: DistanceUnit; athleteName?: string }) {
+  const [shareMsg, setShareMsg] = useState('');
+
+  const handleShare = async () => {
+    vibrate(20);
+    const outcome = await shareCard(
+      {
+        title: 'Personal best',
+        headline: formatDistance(pb.mark, distanceUnit),
+        sub: `${eventName} · ${new Date(pb.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
+        athlete: athleteName,
+        accent: 'pb',
+      },
+      'personal-best.png',
+    );
+    setShareMsg(outcome === 'downloaded' ? '↓' : outcome === 'failed' ? '!' : '✓');
+    setTimeout(() => setShareMsg(''), 2000);
+  };
+
   return (
     <div className="pb-card">
+      <button className="pb-share" onClick={handleShare} aria-label={`Share ${eventName} personal best`}>
+        {shareMsg || <ShareIcon size={15} />}
+      </button>
       <div className="pb-event">{eventName}</div>
       <div className="pb-mark">{formatDistance(pb.mark, distanceUnit)}</div>
       <div className="pb-date">

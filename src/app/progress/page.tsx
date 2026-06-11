@@ -2,6 +2,7 @@
 
 import ProgressChart from '@/components/ProgressChart';
 import ThrowScatter from '@/components/ThrowScatter';
+import PRTimeline from '@/components/PRTimeline';
 import { useApp } from '@/context/AppContext';
 
 export default function ProgressPage() {
@@ -14,6 +15,7 @@ export default function ProgressPage() {
         <h3 className="section-title">Landing Zone Analysis</h3>
         <ThrowScatter sessions={app.sessions} distanceUnit={app.distanceUnit} />
       </div>
+      <PRTimeline sessions={app.sessions} distanceUnit={app.distanceUnit} />
     </div>
   );
 }

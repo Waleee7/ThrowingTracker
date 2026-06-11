@@ -39,14 +39,14 @@
 | Status | Feature | Size | Why |
 |---|---|---|---|
 | [ ] | Real PWA / offline-first (service worker, offline shell, install moment) | M–L | Throwers train at fields with no signal; the credibility feature |
-| [ ] | Share cards — PR alert + Wrapped slides → IG-story image | M | Nike Run Club's growth loop; every PR becomes a post |
-| [ ] | Goal marks + meet countdown on dashboard | S–M | "State in 23 days · 1.2m to goal" — stakes on every open |
-| [ ] | Weekly Recap ("Your Week" Monday moment) | M | Apple Fitness Trends energy |
-| [ ] | Haptics/sound polish + stat count-up animations | S | Vibration exists on save/PR; finish the job |
-| [ ] | Smart streak — suggested rest days don't break it | S | Readiness says rest → resting shouldn't cost the streak |
-| [ ] | Cinematic onboarding level-reveal finale + share card | S–M | The "YOU'RE A COMPETITOR" moment |
-| [ ] | PR progression timeline ("road to 199") | M | Milestone journey view |
-| [ ] | Technique Phase 2: looping clips per phase | L | Deepens the moat; biggest lift, do last |
+| [x] | Share cards — PR alert + PB cards + weekly recap → IG-story image (v3.2.0) | M | Nike Run Club's growth loop; every PR becomes a post |
+| [x] | Goal marks + meet countdown on dashboard (v3.2.0; editor in Profile) | S–M | "State in 23 days · 1.2m to goal" — stakes on every open |
+| [x] | Weekly Recap ("Your Week" moment, Profile toggle, default on) (v3.2.0) | M | Apple Fitness Trends energy |
+| [x] | Haptics polish + stat count-up animations (v3.2.0) | S | Vibration exists on save/PR; finish the job |
+| [x] | Smart streak — single rest days don't break it (v3.2.0) | S | Readiness says rest → resting shouldn't cost the streak |
+| [ ] | Cinematic onboarding level-reveal finale + share card — **awaiting Josh's pick of option A/B/C (animated previews in design-previews/onboarding-finale.html)** | S–M | The "YOU'RE A COMPETITOR" moment |
+| [x] | PR progression timeline ("road to 199") (v3.2.0) | M | Milestone journey view |
+| [~] | Technique Phase 2: video seam SHIPPED (v3.2.0) — content pending (Josh picks source: self-filmed / AI-gen / licensed) | L | Deepens the moat |
 
 ## 3) Design + setup direction — pick ONE, then deep-dive
 

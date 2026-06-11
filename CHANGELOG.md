@@ -1,5 +1,23 @@
 # Changelog
 
+## [3.2.0] — 2026-06-11 — Feel layer: share cards, stakes, recap, smart streak (POLISH-PLAN.md wave 2)
+
+### Added
+- **Share cards** — PR alerts, PB cards, and the weekly recap render a branded 1080×1920 story image (`lib/share-card.ts`, dep-free canvas) and hand it to the native share sheet (`navigator.share` with files), falling back to a PNG download on desktop.
+- **Goals & meets** — new Profile → "Goals & Meets" editor (upcoming meets with dates, per-event goal marks entered in your display unit). The dashboard gains a stakes card: next-meet countdown ("in 23 days", hot state ≤3 days) + per-event goal progress bars (lime when hit). New `lib/goals.ts`, `Meet`/`GoalMark` types, storage-backed.
+- **Weekly Recap** — a "Your Week" overlay the first time you open the app each week: best mark, sessions/throws/RPE, deltas vs the prior week, PR-week badge, and a rule-based coach line (`lib/recap.ts`). On/Off toggle in Profile → Preferences (default on).
+- **PR Timeline** — Progress tab now shows the athlete's milestone rail: every time the all-time best moved, with +deltas and event filter chips (`PRTimeline.tsx`).
+- **Count-up stats** — Today-card hero mark and readiness score animate scoreboard-style (`useCountUp`, respects reduced motion).
+- **Technique Phase-2 video seam** — `TechniquePhase.video`: drop a muted looping clip at `/public/media/technique/<event>/<phase>.mp4`, set the path, and the library renders it above the cues.
+
+### Changed
+- **Smart streak** — `calculateStreak` now counts training days and a single rest day no longer breaks the chain (2+ consecutive idle days do). The app's own readiness score tells athletes to rest; the streak stops punishing them for listening.
+- PR alert: house-palette confetti (was steel-era colors), 5s auto-dismiss, Share button (sharing cancels the dismiss timer).
+- Haptics consolidated behind `lib/haptics.ts`; share actions buzz lightly.
+
+### Tests
+- New suites: `analytics.test.ts` (smart streak), `goals.test.ts`, `recap.test.ts`.
+
 ## [3.1.1] — 2026-06-10 — Fix-first polish pass (see POLISH-PLAN.md)
 
 ### Fixed

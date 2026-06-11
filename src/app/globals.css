@@ -4593,3 +4593,524 @@ textarea:focus-visible, [tabindex]:focus-visible {
 .app .badges-progress-text, .app .badges-count { color: var(--accent); }
 .app .badge-more { color: var(--text-muted); }
 /* ============================================================================ */
+
+/* ============================================================================
+   WAVE 2 — FEATURES LAYER (2026-06-11)
+   Goals/meets countdown · weekly recap · PR timeline · share buttons ·
+   technique phase video. Token-driven: works in both registers.
+   ============================================================================ */
+
+/* ---- Goal & meet countdown card (dashboard) ---- */
+.goal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.goal-meet {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.goal-meet-name {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 5vw, 28px);
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.goal-meet-count {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: var(--radius-pill);
+}
+
+.goal-meet-hot .goal-meet-count {
+  background: var(--accent);
+  color: var(--color-on-orange);
+  border-color: var(--accent);
+}
+
+.goal-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goal-row {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.goal-row-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.goal-row-event {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.goal-row-delta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.goal-row-delta.achieved {
+  color: var(--color-pb);
+  font-weight: 700;
+}
+
+.goal-bar {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.goal-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-orange-soft), var(--color-orange));
+  transition: width 600ms var(--ease-broadcast);
+}
+
+.goal-bar-fill.achieved {
+  background: var(--color-pb);
+}
+
+.goal-row-marks {
+  margin-top: 5px;
+}
+
+/* ---- Weekly recap overlay ---- */
+.recap-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10, 10, 11, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: recapFade 240ms var(--ease-broadcast);
+}
+
+.recap-card {
+  width: 100%;
+  max-width: 430px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lift);
+  padding: 26px 24px 22px;
+  animation: recapRise 360ms var(--ease-broadcast);
+}
+
+@keyframes recapFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes recapRise { from { opacity: 0; transform: translateY(22px) scale(0.97); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .recap-overlay, .recap-card { animation: none; }
+}
+
+.recap-hero {
+  font-family: var(--font-display);
+  font-size: clamp(52px, 14vw, 76px);
+  line-height: 0.95;
+  color: var(--text);
+  margin-top: 10px;
+}
+
+.recap-hero-unit {
+  font-size: 0.32em;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.recap-hero-sub {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.recap-pr-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--color-pb);
+  color: var(--color-on-pb);
+}
+
+.recap-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.recap-stat {
+  text-align: center;
+  padding: 12px 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.recap-stat-val {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.recap-stat-label {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.recap-delta {
+  margin-top: 12px;
+}
+
+.recap-coach-line {
+  margin-top: 14px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.recap-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.recap-actions .secondary-button,
+.recap-actions .primary-button {
+  flex: 1;
+}
+
+/* ---- PR timeline (progress tab) ---- */
+.prtl-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.prtl-chip {
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.prtl-chip.active {
+  border-color: var(--accent);
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.prtl-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.prtl-rail::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--border);
+}
+
+.prtl-node {
+  position: relative;
+  padding: 0 0 18px 28px;
+}
+
+.prtl-node:last-child { padding-bottom: 4px; }
+
+.prtl-dot {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-pb);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.prtl-dot.first {
+  background: var(--accent);
+}
+
+.prtl-top {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.prtl-mark {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.prtl-delta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-pb);
+}
+
+.prtl-first-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+}
+
+.prtl-meta {
+  margin-top: 4px;
+}
+
+.prtl-event {
+  font-weight: 700;
+}
+
+/* ---- PR alert: share action row ---- */
+.pr-alert-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.pr-alert-share {
+  padding: 12px 22px;
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.pr-alert-share:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ---- PB card: share button ---- */
+.pb-card { position: relative; }
+
+.pb-share {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.pb-share:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---- Profile: meets & goal editors ---- */
+.meet-list {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meet-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.meet-row.past { opacity: 0.55; }
+
+.meet-row-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meet-row-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.meet-remove {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.meet-remove:hover {
+  color: var(--color-negative);
+  border-color: var(--color-negative);
+}
+
+.meet-add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meet-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.meet-date-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.goal-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.goal-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-edit-event {
+  min-width: 88px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.goal-edit-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.goal-edit-set {
+  flex-shrink: 0;
+  padding: 10px 14px;
+}
+
+.field-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* ---- Technique: phase video seam ---- */
+.tech-phase-video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--color-ink-900);
+  margin: 10px 0 4px;
+}

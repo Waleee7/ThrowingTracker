@@ -5114,3 +5114,393 @@ textarea:focus-visible, [tabindex]:focus-visible {
   background: var(--color-ink-900);
   margin: 10px 0 4px;
 }
+
+/* ============================================================================
+   WAVE 3 — STADIUM WALKOUT (onboarding finale) + FILM ROOM (2026-06-11)
+   ============================================================================ */
+
+/* ---- Stadium walkout: full-screen takeover, always the dark arena ---- */
+.walkout {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: #050506;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 28px 24px;
+}
+
+.walkout-spot {
+  position: absolute;
+  inset: -40%;
+  pointer-events: none;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.14) 0%, transparent 32%);
+  animation: walkoutSweep 2.6s ease-in-out forwards;
+}
+
+@keyframes walkoutSweep {
+  0% { transform: translate(-12%, 18%); }
+  45% { transform: translate(34%, -6%); }
+  100% { transform: translate(10%, 4%); }
+}
+
+.walkout-announce {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+  opacity: 0;
+  animation: walkoutFadeUp 0.6s ease 0.35s forwards;
+}
+
+.walkout-name {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 13vw, 64px);
+  color: #fff;
+  text-transform: uppercase;
+  line-height: 0.95;
+  margin-top: 12px;
+  transform: translateY(120px);
+  opacity: 0;
+  animation: walkoutRise 0.8s var(--ease-broadcast) 0.9s forwards;
+}
+
+@keyframes walkoutRise { to { transform: none; opacity: 1; } }
+
+.walkout-tier-wrap {
+  margin-top: 18px;
+  opacity: 0;
+  animation: walkoutStamp 0.35s ease 2.05s forwards;
+}
+
+.walkout-tier {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 9vw, 38px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-on-pb);
+  background: var(--color-pb);
+  padding: 8px 22px;
+  border-radius: 8px;
+  transform: rotate(-2deg);
+}
+
+@keyframes walkoutStamp {
+  0% { opacity: 0; transform: scale(2.4); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.walkout { animation: walkoutShake 0.3s linear 2.1s; }
+
+@keyframes walkoutShake {
+  0%, 100% { transform: none; }
+  25% { transform: translate(3px, -2px); }
+  50% { transform: translate(-3px, 2px); }
+  75% { transform: translate(2px, 1px); }
+}
+
+.walkout-reasons {
+  margin-top: 24px;
+  max-width: 320px;
+  text-align: left;
+  color: #D1D5DB;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.walkout-reasons div {
+  opacity: 0;
+  animation: walkoutFadeUp 0.45s ease forwards;
+  padding-left: 18px;
+  position: relative;
+  margin-bottom: 7px;
+}
+
+.walkout-reasons div::before {
+  content: "\25B8";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.walkout-note {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--color-fg-dim);
+  opacity: 0;
+  animation: walkoutFadeUp 0.5s ease 3.7s forwards;
+}
+
+.walkout-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 22px;
+  opacity: 0;
+  animation: walkoutFadeUp 0.5s ease 3.9s forwards;
+}
+
+.walkout-share, .walkout-start {
+  flex: 1;
+  padding: 15px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  border: none;
+}
+
+.walkout-share {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.4);
+}
+
+.walkout-start {
+  background: var(--color-orange);
+  color: var(--color-on-orange);
+}
+
+@keyframes walkoutFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+.walkout-confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+.walkout-conf-piece {
+  position: absolute;
+  top: -14px;
+  width: 9px;
+  height: 16px;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: walkoutConfFall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes walkoutConfFall {
+  0% { opacity: 0; }
+  8% { opacity: 0.9; }
+  100% { transform: translateY(110vh) rotate(640deg); opacity: 0.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .walkout, .walkout-spot, .walkout-announce, .walkout-name, .walkout-tier-wrap,
+  .walkout-reasons div, .walkout-note, .walkout-actions { animation: none; opacity: 1; transform: none; }
+  .walkout-conf-piece { display: none; }
+}
+
+/* ---- Technique hub segment ---- */
+.tech-mode-segment { margin-bottom: 18px; }
+
+/* ---- Film Room ---- */
+.film-picker { display: flex; flex-direction: column; gap: 14px; }
+
+.film-intro {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.film-upload-btn { align-self: flex-start; }
+
+.film-error { color: var(--color-negative); font-size: 13px; }
+
+.film-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.film-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.film-row-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.film-row-name { font-size: 14px; font-weight: 700; }
+
+.film-row-meta { display: inline-flex; align-items: center; gap: 8px; }
+
+.film-vo-badge {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--color-pb);
+  color: var(--color-on-pb);
+}
+
+.film-studio { display: flex; flex-direction: column; gap: 12px; }
+
+.film-head { display: flex; align-items: center; gap: 10px; }
+
+.film-back { flex-shrink: 0; padding: 9px 14px; }
+
+.film-name-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.film-name-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.film-stage {
+  position: relative;
+  background: #000;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.film-stage video {
+  display: block;
+  width: 100%;
+  max-height: 62vh;
+  object-fit: contain;
+  background: #000;
+}
+
+.film-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.film-rec-pill {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 59, 48, 0.92);
+  color: #fff;
+  pointer-events: none;
+}
+
+.film-rec-pill.replay { background: rgba(10,10,11,0.8); border: 1px solid var(--color-pb); color: var(--color-pb); }
+
+.film-transport { display: flex; flex-direction: column; gap: 8px; }
+
+.film-transport .scrub-bar { width: 100%; }
+
+.film-transport-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.film-time {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  min-width: 110px;
+}
+
+.film-buttons { display: flex; gap: 6px; }
+
+.film-btn {
+  width: 42px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.film-btn:disabled { opacity: 0.4; cursor: default; }
+
+.film-play { background: var(--accent); border-color: var(--accent); color: var(--color-on-orange); }
+
+.film-speeds { display: flex; gap: 6px; margin-left: auto; }
+
+.film-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+
+.film-tool-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.film-color {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  padding: 0;
+}
+
+.film-color.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+.film-vo { display: flex; flex-direction: column; gap: 6px; }
+
+.film-vo-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.film-vo-row .primary-button, .film-vo-row .secondary-button { flex: 1; min-width: 160px; }
+
+.film-vo-stop { width: 100%; }

@@ -44,9 +44,9 @@
 | [x] | Weekly Recap ("Your Week" moment, Profile toggle, default on) (v3.2.0) | M | Apple Fitness Trends energy |
 | [x] | Haptics polish + stat count-up animations (v3.2.0) | S | Vibration exists on save/PR; finish the job |
 | [x] | Smart streak — single rest days don't break it (v3.2.0) | S | Readiness says rest → resting shouldn't cost the streak |
-| [ ] | Cinematic onboarding level-reveal finale + share card — **awaiting Josh's pick of option A/B/C (animated previews in design-previews/onboarding-finale.html)** | S–M | The "YOU'RE A COMPETITOR" moment |
+| [x] | Cinematic onboarding finale — **Stadium Walkout** picked & shipped (v3.3.0): spotlight, lineup name rise, lime tier stamp + shake/haptic/confetti, share card | S–M | The "YOU'RE A COMPETITOR" moment |
 | [x] | PR progression timeline ("road to 199") (v3.2.0) | M | Milestone journey view |
-| [~] | Technique Phase 2: video seam SHIPPED (v3.2.0) — content pending (Josh picks source: self-filmed / AI-gen / licensed) | L | Deepens the moat |
+| [x] | **Film Room** (v3.3.0) — #9 re-scoped per Josh: not our clips, *athlete's own film*. Upload video → frame-by-frame scrub + slow-mo → draw/line/angle markup (touch-ready) → **voice-over film sessions with synced replay** → annotated-frame share. Sport-agnostic. Technique tab is now a Library / Film Room hub. (Demo-clip seam from v3.2.0 still available for library content later.) | L | The moat — no track app has a film room |
 
 ## 3) Design + setup direction — pick ONE, then deep-dive
 

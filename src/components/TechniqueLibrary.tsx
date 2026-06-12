@@ -23,7 +23,8 @@ export default function TechniqueLibrary({ initialEvent }: { initialEvent?: stri
   const selectEvent = (id: string) => { setEvent(id); setVariationIdx(0); };
 
   return (
-    <div className="tab-content" id="tab-technique">
+    // Plain wrapper — the /technique hub page owns the .tab-content frame.
+    <div id="tab-technique">
       <div className="tech-head">
         <div>
           <div className="eyebrow">Technique Library</div>

@@ -1,12 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Profile } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
 import { type DistanceUnit, parseDistanceToMeters } from '@/lib/units';
 import { AppLogo } from '@/components/Icons';
+import { shareCard } from '@/lib/share-card';
+import { vibrate } from '@/lib/haptics';
 import splashOnboarding from '@/assets/media/splash-onboarding.webp';
+
+const WALKOUT_CONFETTI = ['#FF5A1F', '#C8FF00', '#FFFFFF', '#38BDF8', '#FF8A3D'];
 
 /** Per-event accent token (mirrors EVENT_COLORS keys → --color-evt-* vars). */
 const EVENT_HUE_VAR: Record<string, string> = {
@@ -134,6 +138,89 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const visibleEvents = grade
     ? EVENTS.filter(e => isEventAgeAppropriate(e.id as EventId, grade as GradeLevel))
     : EVENTS;
+
+  // Stadium walkout: haptic thump when the tier stamps down (~2.1s in).
+  useEffect(() => {
+    if (step === 5 && derived) {
+      const t = setTimeout(() => vibrate([15, 25, 45]), 2050);
+      return () => clearTimeout(t);
+    }
+  }, [step, derived?.level]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pre-rolled confetti for the stamp moment (fixed once per mount).
+  const walkoutConfetti = useMemo(
+    () =>
+      Array.from({ length: 26 }, (_, i) => ({
+        left: Math.random() * 100,
+        delay: 2.15 + Math.random() * 0.5,
+        duration: 1.6 + Math.random() * 1.4,
+        color: WALKOUT_CONFETTI[i % WALKOUT_CONFETTI.length],
+        rotate: Math.random() * 360,
+      })),
+    [],
+  );
+
+  // ---- Step 5: STADIUM WALKOUT — full-screen takeover, not a card ----
+  if (step === 5 && derived) {
+    const eventNames = selectedEvents
+      .map(id => EVENTS.find(e => e.id === id)?.name || id)
+      .join(' · ');
+
+    const shareLevel = async () => {
+      vibrate(30);
+      await shareCard(
+        {
+          title: "You're set up as",
+          headline: derived.level.toUpperCase(),
+          sub: eventNames || 'ThrowingTracker athlete',
+          lines: derived.reasons.slice(0, 2),
+          athlete: name,
+          accent: 'orange',
+        },
+        'my-level.png',
+      );
+    };
+
+    return (
+      <div className="walkout" role="dialog" aria-label="Your athlete level">
+        <div className="walkout-spot" aria-hidden="true" />
+        <div className="walkout-confetti" aria-hidden="true">
+          {walkoutConfetti.map((p, i) => (
+            <span
+              key={i}
+              className="walkout-conf-piece"
+              style={{
+                left: `${p.left}%`,
+                background: p.color,
+                animationDelay: `${p.delay}s`,
+                animationDuration: `${p.duration}s`,
+                transform: `rotate(${p.rotate}deg)`,
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="walkout-announce">Now entering the ring</div>
+        <div className="walkout-name">{(name.trim() || 'Athlete').toUpperCase()}</div>
+        <div className="walkout-tier-wrap">
+          <span className="walkout-tier">{derived.level.toUpperCase()}</span>
+        </div>
+
+        <div className="walkout-reasons">
+          {derived.reasons.map((r, i) => (
+            <div key={i} style={{ animationDelay: `${2.7 + i * 0.35}s` }}>{r}</div>
+          ))}
+        </div>
+
+        <p className="walkout-note">You can change this anytime in your profile.</p>
+
+        <div className="walkout-actions">
+          <button className="walkout-share" onClick={shareLevel}>Share it</button>
+          <button className="walkout-start" onClick={handleFinish}>Start Tracking</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="onboarding-overlay">
@@ -460,28 +547,6 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           </div>
         )}
 
-        {step === 5 && derived && (
-          <div className="onboarding-step">
-            <h2 className="onboarding-step-title">You&apos;re set up as</h2>
-            <div className="onboarding-level-badge">
-              <span className={`level-badge level-${derived.level}`}>
-                {derived.level.toUpperCase()}
-              </span>
-            </div>
-            <p className="onboarding-step-desc">Here&apos;s why:</p>
-            <ul className="onboarding-reasons">
-              {derived.reasons.map((r, i) => (
-                <li key={i}>{r}</li>
-              ))}
-            </ul>
-            <p className="onboarding-step-desc" style={{ marginTop: 12 }}>
-              You can change this anytime in your profile.
-            </p>
-            <button className="onboarding-btn primary" onClick={handleFinish}>
-              Start Tracking
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.3.0] — 2026-06-12 — Stadium Walkout finale + Film Room (POLISH-PLAN.md wave 3)
+
+### Added
+- **Film Room** — the Technique tab is now a hub: **Library | Film Room**. Athletes load their *own* video (stored locally in IndexedDB), scrub it frame-by-frame with slow-mo (0.25/0.5/1x), and draw on the film — freehand, straight lines, and an angle tool that measures degrees. Touch + mouse (pointer events). **Voice-over film sessions:** hit record, talk through the tape while you play/pause/slow/seek it — the transport timeline is captured alongside the mic audio, and **Replay** drives the video off your narration clock exactly the way you reviewed it (`lib/film.ts` · `videoPosAt`, unit-tested). Annotated frames export to the share sheet. Sport-agnostic by design — any athlete, any sport. Deep link: `/technique?mode=film`.
+- **Stadium Walkout onboarding finale** — setup now ends with a full-screen moment: spotlight sweep, your name rising starting-lineup style, the tier **stamping down in lime** with a shake + haptic + confetti burst, reasons typing in, and a share-card button. Respects `prefers-reduced-motion`.
+
+### Notes
+- The orphaned `VideoPlayer` analysis engine (built in v2.0, never wired into any surface) provided the frame-step/annotation patterns; the Film Room supersedes it as the user-facing film tool.
+- Film Room media never leaves the device (IndexedDB blobs + localStorage records; wiped by Log Out & Reset).
+
 ## [3.2.0] — 2026-06-11 — Feel layer: share cards, stakes, recap, smart streak (POLISH-PLAN.md wave 2)
 
 ### Added

@@ -1,4 +1,5 @@
 import { Profile, Session, Meet, GoalMark } from './types';
+import type { FilmSessionRecord } from './film';
 
 const PROFILE_KEY = 'throwingProfile';
 const SESSIONS_KEY = 'throwingSessions';
@@ -9,6 +10,7 @@ const MEETS_KEY = 'throwingMeets';
 const GOALS_KEY = 'throwingGoalMarks';
 const RECAP_ENABLED_KEY = 'throwingRecapEnabled';
 const RECAP_LAST_SHOWN_KEY = 'throwingRecapLastShown';
+const FILM_SESSIONS_KEY = 'throwingFilmSessions';
 const SCHEMA_VERSION = 3;
 
 function get<T>(key: string): T | null {
@@ -58,6 +60,10 @@ export const storage = {
   getRecapLastShown: (): string | null => get<string>(RECAP_LAST_SHOWN_KEY),
   setRecapLastShown: (weekKey: string) => set(RECAP_LAST_SHOWN_KEY, weekKey),
 
+  // Film Room session records (video/audio blobs live in IndexedDB).
+  getFilmSessions: (): FilmSessionRecord[] => get<FilmSessionRecord[]>(FILM_SESSIONS_KEY) || [],
+  setFilmSessions: (records: FilmSessionRecord[]) => set(FILM_SESSIONS_KEY, records),
+
   getSchemaVersion: (): number => get<number>(SCHEMA_VERSION_KEY) ?? 0,
   migrate: () => {
     if (typeof window === 'undefined') return;
@@ -83,7 +89,7 @@ export const storage = {
     if (typeof window === 'undefined') return;
     [
       PROFILE_KEY, SESSIONS_KEY, LAST_EXPORT_KEY, DARK_MODE_KEY, SCHEMA_VERSION_KEY,
-      MEETS_KEY, GOALS_KEY, RECAP_ENABLED_KEY, RECAP_LAST_SHOWN_KEY,
+      MEETS_KEY, GOALS_KEY, RECAP_ENABLED_KEY, RECAP_LAST_SHOWN_KEY, FILM_SESSIONS_KEY,
     ].forEach((k) =>
       localStorage.removeItem(k),
     );

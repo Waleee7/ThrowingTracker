@@ -3,6 +3,7 @@
 import ProgressChart from '@/components/ProgressChart';
 import ThrowScatter from '@/components/ThrowScatter';
 import PRTimeline from '@/components/PRTimeline';
+import ChartErrorBoundary from '@/components/ChartErrorBoundary';
 import { useApp } from '@/context/AppContext';
 
 export default function ProgressPage() {
@@ -10,12 +11,18 @@ export default function ProgressPage() {
   return (
     <div className="tab-content">
       <h2 className="tab-title">Progress</h2>
-      <ProgressChart sessions={app.sessions} distanceUnit={app.distanceUnit} />
+      <ChartErrorBoundary label="progress chart">
+        <ProgressChart sessions={app.sessions} distanceUnit={app.distanceUnit} />
+      </ChartErrorBoundary>
       <div style={{ marginTop: 32 }}>
         <h3 className="section-title">Landing Zone Analysis</h3>
-        <ThrowScatter sessions={app.sessions} distanceUnit={app.distanceUnit} />
+        <ChartErrorBoundary label="landing zone map">
+          <ThrowScatter sessions={app.sessions} distanceUnit={app.distanceUnit} />
+        </ChartErrorBoundary>
       </div>
-      <PRTimeline sessions={app.sessions} distanceUnit={app.distanceUnit} />
+      <ChartErrorBoundary label="PR timeline">
+        <PRTimeline sessions={app.sessions} distanceUnit={app.distanceUnit} />
+      </ChartErrorBoundary>
     </div>
   );
 }

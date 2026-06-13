@@ -24,6 +24,9 @@ function get<T>(key: string): T | null {
   }
 }
 
+/** Fired on window when a localStorage write fails (quota / private mode). */
+export const STORAGE_ERROR_EVENT = 'tt:storage-error';
+
 function set(key: string, value: unknown): boolean {
   if (typeof window === 'undefined') return false;
   try {
@@ -31,6 +34,11 @@ function set(key: string, value: unknown): boolean {
     return true;
   } catch (error) {
     console.error('Storage write error:', error);
+    // Surface the failure — a silently dropped write means the athlete's
+    // session looks logged until the next reload, then vanishes.
+    try {
+      window.dispatchEvent(new CustomEvent(STORAGE_ERROR_EVENT, { detail: { key } }));
+    } catch { /* CustomEvent unavailable — nothing else we can do */ }
     return false;
   }
 }

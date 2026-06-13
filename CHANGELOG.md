@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.4.0] — 2026-06-13 — Fable 5 turn-up: full tokenization + resilience pass
+
+### Changed
+- **Design system fully tokenized** — the last ~225 hardcoded color literals in `globals.css` (the leftover steel-era indigo `#2f5575`/`#26506f`/`#3a648a`, rust `#b5482f`, and dark-register navies `rgba(20,20,35)`/`rgba(30,30,50)`/`#0f1117`) were swapped to CSS custom properties (`--accent`, `--accent-soft`, `--accent-ink`, `--danger`, `--info`, and the ink scale). Buttons, inputs, gradients, readiness tiers, coach surfaces, onboarding, and badges all now read the house tokens, so the white/orange theme is a single source of truth and a future re-skin is a token edit, not a find-and-replace.
+- **New semantic tokens** — `--danger` (fouls/destructive, brightened for ink bg, drops to `#B5482F` on paper), `--info` (the "ok" readiness tier — kept off-orange so it can never collide with the warn state, which previously rendered identical orange), `--accent-soft`/`--accent-ink` for gradients, and `--focus-ring`. `rgba()` overlays became `color-mix(in srgb, …)` so opacity tints track the token.
+- **`body`/`.app` base colors** now read `--bg`/`--text` instead of hardcoded `#fff`/`#000`, fixing the light/dark register seam at the root.
+
+### Added
+- **Storage-failure alerting** — a failed `localStorage` write (quota exceeded / private mode) now dispatches a `tt:storage-error` event and surfaces a persistent `StorageAlert` banner. Previously a dropped write looked saved until the next reload, then silently vanished — the worst failure mode for a training log.
+- **Chart error boundaries** — `ProgressChart`, `ThrowScatter`, and `PRTimeline` are each wrapped in `ChartErrorBoundary`. A single malformed session record now degrades to a quiet "couldn't draw this — your data is safe" fallback with a retry, instead of white-screening the Progress page.
+- **Blanket reduced-motion guard** — a catch-all `@media (prefers-reduced-motion: reduce)` rule neutralizes the 20+ animations that individual queries didn't enumerate (voice pulse, count-ups, sweeps, etc.).
+
+### Notes
+- All 107 tests pass; production build clean. Visually verified in both light and dark registers (dashboard, progress charts, coach).
+
 ## [3.3.0] — 2026-06-12 — Stadium Walkout finale + Film Room (POLISH-PLAN.md wave 3)
 
 ### Added

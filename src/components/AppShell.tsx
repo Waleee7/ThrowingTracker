@@ -16,6 +16,7 @@ import PRAlert from '@/components/PRAlert';
 import AchievementToast from '@/components/AchievementToast';
 import SeasonWrapped from '@/components/SeasonWrapped';
 import WeeklyRecap from '@/components/WeeklyRecap';
+import StorageAlert from '@/components/StorageAlert';
 import { getEffectiveLevel } from '@/lib/athlete-level';
 
 // Most-used first so they stay visible if a narrow screen scrolls the row;
@@ -110,6 +111,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </nav>
 
       <main className="main" id="main-content">{children}</main>
+
+      <StorageAlert />
 
       {app.prAlert && (
         <PRAlert

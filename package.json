@@ -1,6 +1,6 @@
 {
   "name": "throwing-tracker",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Track & field throwing training log — Shot Put, Discus, Hammer, Weight Throw, Javelin",
   "private": true,
   "scripts": {

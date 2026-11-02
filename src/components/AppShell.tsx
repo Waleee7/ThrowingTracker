@@ -17,22 +17,27 @@ import AchievementToast from '@/components/AchievementToast';
 import SeasonWrapped from '@/components/SeasonWrapped';
 import WeeklyRecap from '@/components/WeeklyRecap';
 import { getEffectiveLevel } from '@/lib/athlete-level';
+import { haptic } from '@/lib/haptics';
 
 // Most-used first so they stay visible if a narrow screen scrolls the row;
 // Profile holds the conventional last slot.
+// On phones the bar is a 5-slot bottom dock (Home · History · LOG · Progress ·
+// Coach); `secondary` tabs hide there and stay reachable (Technique from Home,
+// Profile from the header avatar). Desktop shows all seven in a top rail.
 const NAV = [
-  { href: '/', label: 'Dashboard', Icon: DashboardIcon },
-  { href: '/log', label: 'Log', Icon: LogIcon },
-  { href: '/coach', label: 'Coach', Icon: CoachIcon },
-  { href: '/technique', label: 'Technique', Icon: TechniqueIcon },
-  { href: '/progress', label: 'Progress', Icon: ProgressIcon },
-  { href: '/history', label: 'History', Icon: HistoryIcon },
-  { href: '/profile', label: 'Profile', Icon: ProfileIcon },
+  { href: '/', label: 'Home', slug: 'home', Icon: DashboardIcon, secondary: false },
+  { href: '/log', label: 'Log', slug: 'log', Icon: LogIcon, secondary: false },
+  { href: '/coach', label: 'Coach', slug: 'coach', Icon: CoachIcon, secondary: false },
+  { href: '/technique', label: 'Technique', slug: 'technique', Icon: TechniqueIcon, secondary: true },
+  { href: '/progress', label: 'Progress', slug: 'progress', Icon: ProgressIcon, secondary: false },
+  { href: '/history', label: 'History', slug: 'history', Icon: HistoryIcon, secondary: false },
+  { href: '/profile', label: 'Profile', slug: 'profile', Icon: ProfileIcon, secondary: true },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const app = useApp();
   const pathname = usePathname();
+  const initials = (app.profile.name || '').split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join('') || 'ME';
 
   if (!app.loaded) {
     return (
@@ -76,33 +81,37 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <div className="header-right">
             <button
               className="dark-mode-toggle"
-              onClick={app.toggleDarkMode}
+              onClick={() => { haptic('tap'); app.toggleDarkMode(); }}
               aria-label={app.darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               aria-pressed={app.darkMode}
             >
               {app.darkMode ? <SunIcon size={18} /> : <MoonIcon size={18} />}
             </button>
-            {app.streak > 0 && (
-              <div className="streak-badge" aria-label={`${app.streak} day training streak`}>
-                <span className="streak-number">{app.streak}</span>
-                <span className="streak-label" aria-hidden="true">&#128293;</span>
-              </div>
-            )}
+            <Link
+              href="/profile"
+              className={`header-avatar${pathname === '/profile' ? ' active' : ''}`}
+              aria-label="Profile and settings"
+              aria-current={pathname === '/profile' ? 'page' : undefined}
+              onClick={() => haptic('tap')}
+            >
+              {initials}
+            </Link>
           </div>
         </div>
       </header>
 
       <nav className="tab-nav" aria-label="Primary">
-        {NAV.map(({ href, label, Icon }) => {
+        {NAV.map(({ href, label, slug, Icon, secondary }) => {
           const isActive = pathname === href;
           return (
             <Link
               key={href}
               href={href}
-              className={`tab-button${isActive ? ' active' : ''}`}
+              onClick={() => { if (!isActive) haptic('tap'); }}
+              className={`tab-button tab-${slug}${secondary ? ' tab-secondary' : ''}${isActive ? ' active' : ''}`}
               aria-current={isActive ? 'page' : undefined}
             >
-              <span className="tab-icon" aria-hidden="true"><Icon size={22} /></span>
+              <span className="tab-icon" aria-hidden="true"><Icon size={href === '/log' ? 26 : 22} /></span>
               <span className="tab-label">{label}</span>
             </Link>
           );

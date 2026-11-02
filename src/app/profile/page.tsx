@@ -10,7 +10,10 @@ export default function ProfilePage() {
     <div>
       <ProfileTab profile={app.profile} onSave={app.setProfile} onDataImported={app.onDataImported} />
       <div className="tab-content" style={{ paddingTop: 0 }}>
-        <AchievementBadges sessions={app.sessions} />
+        <details className="profile-fold">
+          <summary>Achievements</summary>
+          <AchievementBadges sessions={app.sessions} />
+        </details>
       </div>
     </div>
   );

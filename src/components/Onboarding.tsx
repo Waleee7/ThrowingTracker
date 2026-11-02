@@ -1,14 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
 import { Profile } from '@/lib/types';
 import { EVENTS } from '@/lib/constants';
 import { type DistanceUnit, parseDistanceToMeters } from '@/lib/units';
 import { AppLogo } from '@/components/Icons';
 import { shareCard } from '@/lib/share-card';
-import { vibrate } from '@/lib/haptics';
-import splashOnboarding from '@/assets/media/splash-onboarding.webp';
+import { haptic } from '@/lib/haptics';
 
 const WALKOUT_CONFETTI = ['#FF5A1F', '#C8FF00', '#FFFFFF', '#38BDF8', '#FF8A3D'];
 
@@ -142,7 +140,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   // Stadium walkout: haptic thump when the tier stamps down (~2.1s in).
   useEffect(() => {
     if (step === 5 && derived) {
-      const t = setTimeout(() => vibrate([15, 25, 45]), 2050);
+      const t = setTimeout(() => haptic('success'), 2050);
       return () => clearTimeout(t);
     }
   }, [step, derived?.level]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -167,7 +165,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
       .join(' · ');
 
     const shareLevel = async () => {
-      vibrate(30);
+      haptic('select');
       await shareCard(
         {
           title: "You're set up as",
@@ -233,51 +231,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
         {step === 0 && (
           <div className="onboarding-step">
-            <div
-              style={{
-                position: 'relative',
-                margin: '-4px -4px 16px',
-                borderRadius: 'var(--radius-lg)',
-                overflow: 'hidden',
-                minHeight: 240,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                textAlign: 'center',
-                padding: '24px 20px 22px',
-              }}
-            >
-              <Image
-                src={splashOnboarding}
-                alt=""
-                fill
-                placeholder="blur"
-                priority
-                sizes="(max-width: 480px) 100vw, 440px"
-                style={{ objectFit: 'cover', zIndex: 0 }}
-              />
-              <div
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  zIndex: 1,
-                  background:
-                    'linear-gradient(0deg, rgba(10,10,11,0.92) 0%, rgba(10,10,11,0.6) 50%, rgba(10,10,11,0.4) 100%)',
-                }}
-              />
-              <div style={{ position: 'relative', zIndex: 2 }}>
-                <div className="onboarding-logo">
-                  <AppLogo size={56} />
-                </div>
-                <h1
-                  className="onboarding-title"
-                  style={{ fontFamily: 'var(--font-display)', color: 'var(--color-fg)' }}
-                >
-                  ThrowingTracker
-                </h1>
-              </div>
+            <div className="onboarding-hero">
+              <AppLogo size={72} />
+              <h1 className="onboarding-title">ThrowingTracker</h1>
             </div>
             <p className="onboarding-subtitle">
               Built for throwers — from your first meet to the Olympic stadium.

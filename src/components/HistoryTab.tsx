@@ -102,7 +102,7 @@ function RecentView({
               <span className="history-date">{dateStr}</span>
               <span className="history-event">{event?.name || session.event}</span>
               {session.sessionType === 'competition' && (
-                <span className="competition-badge">&#11088;</span>
+                <span className="competition-badge">Meet</span>
               )}
             </div>
             <div className="history-stats">

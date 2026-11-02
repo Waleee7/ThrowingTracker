@@ -10,6 +10,7 @@ import { storage } from '@/lib/storage';
 import { clearAllMedia } from '@/lib/media-storage';
 import { toLocalDateKey } from '@/lib/dates';
 import { useApp } from '@/context/AppContext';
+import { haptic, isHapticsEnabled, setHapticsEnabled, hapticsSupported } from '@/lib/haptics';
 
 interface ProfileTabProps {
   profile: Profile;
@@ -20,6 +21,7 @@ interface ProfileTabProps {
 export default function ProfileTab({ profile, onSave, onDataImported }: ProfileTabProps) {
   const app = useApp();
   const [name, setName] = useState(profile.name);
+  const [hapticsOn, setHapticsOn] = useState(() => isHapticsEnabled());
   const [meetName, setMeetName] = useState('');
   const [meetDate, setMeetDate] = useState('');
   const [goalInputs, setGoalInputs] = useState<Record<string, string>>({});
@@ -284,6 +286,32 @@ export default function ProfileTab({ profile, onSave, onDataImported }: ProfileT
             </button>
           </div>
           <p className="field-hint">A &ldquo;Your Week&rdquo; summary the first time you open the app each week.</p>
+        </div>
+        <div className="form-group">
+          <label className="label" id="haptics-label">Haptics</label>
+          <div className="toggle-group" role="group" aria-labelledby="haptics-label">
+            <button
+              type="button"
+              className={`toggle-button${hapticsOn ? ' active' : ''}`}
+              aria-pressed={hapticsOn}
+              onClick={() => { setHapticsEnabled(true); setHapticsOn(true); haptic('success'); }}
+            >
+              On
+            </button>
+            <button
+              type="button"
+              className={`toggle-button${!hapticsOn ? ' active' : ''}`}
+              aria-pressed={!hapticsOn}
+              onClick={() => { setHapticsEnabled(false); setHapticsOn(false); }}
+            >
+              Off
+            </button>
+          </div>
+          <p className="field-hint">
+            {hapticsSupported()
+              ? 'Subtle vibration on logging, PRs and fouls.'
+              : 'Not supported by this browser (iPhone Safari has no vibration). Works on Android and in the installed app where available.'}
+          </p>
         </div>
       </section>
 

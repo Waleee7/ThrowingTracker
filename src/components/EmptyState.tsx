@@ -1,7 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-import emptyField from '@/assets/media/empty-field.webp';
+import { DiscIcon } from '@/components/Icons';
 
 interface EmptyStateProps {
   icon?: string;
@@ -25,23 +24,7 @@ export default function EmptyState({
   const hasActions = (actionLabel && onAction) || (secondaryLabel && onSecondary);
   return (
     <div className="empty-state">
-      <Image
-        src={emptyField}
-        alt=""
-        width={300}
-        height={150}
-        placeholder="blur"
-        sizes="(max-width: 480px) 80vw, 300px"
-        style={{
-          width: '100%',
-          maxWidth: 170,
-          height: 'auto',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--color-ink-700)',
-          marginBottom: 12,
-          objectFit: 'cover',
-        }}
-      />
+      <div className="empty-mark" aria-hidden="true"><DiscIcon size={34} /></div>
       <p className="empty-title">{title}</p>
       {text && <p className="empty-text">{text}</p>}
       {hasActions && (

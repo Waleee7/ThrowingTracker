@@ -19,6 +19,7 @@ import { loadSampleData } from '@/lib/seed';
 import { setGoal } from '@/lib/goals';
 import { buildWeeklyRecap, type WeeklyRecapData } from '@/lib/recap';
 import { weekStartKey } from '@/lib/dates';
+import { haptic } from '@/lib/haptics';
 
 const TAB_PATHS: Record<TabId, string> = {
   dashboard: '/',
@@ -178,18 +179,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const navigateTab = useCallback((tab: TabId) => { router.push(TAB_PATHS[tab]); }, [router]);
 
-  const fireAchievements = useCallback((updatedSessions: Session[], vibrate = false) => {
+  const fireAchievements = useCallback((updatedSessions: Session[]) => {
     const newBadges = getNewlyUnlocked(updatedSessions, unlockedIdsRef.current);
     if (newBadges.length > 0) {
       setAchievementToasts(newBadges);
       unlockedIdsRef.current = [...unlockedIdsRef.current, ...newBadges.map((b) => b.id)];
-      if (vibrate && 'vibrate' in navigator) navigator.vibrate([30, 20, 30]);
     }
   }, []);
 
   const saveSession = useCallback((session: Session) => {
     if (editSession?.id === session.id) {
       updateSession(session.id, session);
+      haptic('success');
       setEditSession(null);
       router.push('/history');
       return;
@@ -198,14 +199,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addSession(session);
     if (prResult.isPR) {
       setPrAlert({ eventName: prResult.eventName, newMark: session.bestMark, previousBest: prResult.previousBest });
-      if ('vibrate' in navigator) navigator.vibrate(50);
+      haptic('pr'); // celebratory pattern replaces the plain save tick
+    } else {
+      haptic('success');
     }
-    fireAchievements([...sessions, session], true);
+    fireAchievements([...sessions, session]);
     router.push('/');
   }, [editSession, sessions, addSession, updateSession, fireAchievements, router]);
 
   const saveMeet = useCallback((session: Session) => {
     addSession(session);
+    haptic('success');
     fireAchievements([...sessions, session]);
     setShowMeetDay(false);
     router.push('/');

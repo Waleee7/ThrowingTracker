@@ -9,7 +9,7 @@ import { WeeklyRecapData } from '@/lib/recap';
 import { EVENTS } from '@/lib/constants';
 import { formatDistance, type DistanceUnit } from '@/lib/units';
 import { shareCard } from '@/lib/share-card';
-import { vibrate } from '@/lib/haptics';
+import { haptic } from '@/lib/haptics';
 
 interface WeeklyRecapProps {
   data: WeeklyRecapData;
@@ -23,7 +23,7 @@ export default function WeeklyRecap({ data, distanceUnit, athleteName, onClose }
   const bestEventName = EVENTS.find((e) => e.id === data.bestEvent)?.name || '';
 
   const handleShare = async () => {
-    vibrate(30);
+    haptic('select');
     const outcome = await shareCard(
       {
         title: 'My week in the ring',

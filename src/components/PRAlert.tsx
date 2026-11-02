@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { formatDistance, type DistanceUnit } from '@/lib/units';
 import { shareCard } from '@/lib/share-card';
-import { vibrate } from '@/lib/haptics';
+import { haptic } from '@/lib/haptics';
 
 interface PRAlertProps {
   eventName: string;
@@ -53,7 +53,7 @@ export default function PRAlert({ eventName, newMark, previousBest, distanceUnit
   const handleShare = async () => {
     // Sharing means the athlete is engaged — stop the auto-dismiss clock.
     if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
-    vibrate(30);
+    haptic('select');
     const outcome = await shareCard(
       {
         title: 'New PR',

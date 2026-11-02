@@ -18,7 +18,7 @@ import {
   pickAudioMime,
 } from '@/lib/film';
 import { toLocalDateKey } from '@/lib/dates';
-import { vibrate } from '@/lib/haptics';
+import { haptic } from '@/lib/haptics';
 
 const SPEEDS = [0.25, 0.5, 1];
 const FPS = 30;
@@ -352,7 +352,7 @@ function FilmStudio({
     eventsRef.current = [{ at: 0, videoT: v.currentTime, rate: v.playbackRate, playing: !v.paused }];
     setRecSecs(0);
     setMode('recording');
-    vibrate(20);
+    haptic('tap');
     rec.start();
   };
 
@@ -362,7 +362,7 @@ function FilmStudio({
     const v = video();
     if (v) v.muted = false;
     setMode('free');
-    vibrate([20, 30, 20]);
+    haptic('success');
   };
 
   useEffect(() => {
@@ -421,7 +421,7 @@ function FilmStudio({
     ctx.drawImage(overlay, 0, 0);
     const blob = await new Promise<Blob | null>((res) => out.toBlob(res, 'image/png'));
     if (!blob) return;
-    vibrate(20);
+    haptic('tap');
     const file = new File([blob], 'film-frame.png', { type: 'image/png' });
     const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
     if (typeof nav.share === 'function' && nav.canShare?.({ files: [file] })) {

@@ -6,6 +6,7 @@ import { EVENTS, RPE_EMOJI } from '@/lib/constants';
 import { toLocalDateKey } from '@/lib/dates';
 import { suggestImplementKg } from '@/lib/implements';
 import { getEffectiveLevel } from '@/lib/athlete-level';
+import { haptic } from '@/lib/haptics';
 import {
   formatDistance,
   parseDistanceToMeters,
@@ -73,7 +74,7 @@ export default function MeetDayMode({ distanceUnit, profile, priorBestByEvent, o
     }
 
     // Haptic
-    if ('vibrate' in navigator) navigator.vibrate(foul ? [30, 20, 30] : 30);
+    haptic(foul ? 'warning' : 'tap');
   }, [currentAttempt, distanceInput, distanceUnit]);
 
   const validAttempts = attempts.filter((a) => a.distance !== null && !a.foul);

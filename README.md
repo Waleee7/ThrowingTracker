@@ -1,190 +1,142 @@
-<h1 align="center">
-  <a href="https://github.com/Waleee7/ThrowingTracker">
-    <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=36&duration=2000&pause=9999&color=C8FF00&center=true&vCenter=true&repeat=false&width=520&height=50&lines=ThrowingTracker+v3.0" alt="ThrowingTracker v3.0" />
-  </a>
-</h1>
+# ThrowingTracker
 
-<p align="center">
-  <strong>A structured training log and analytics platform for competitive track &amp; field throwers</strong><br/>
-  Session tracking, progress visualization, competition management, and landing zone analysis — all running locally in the browser.
-</p>
+**A training log, progress tracker and film room for track & field throwers. Your data stays on your device.**
 
-<p align="center">
+**[Open the app → throwing-tracker.vercel.app](https://throwing-tracker.vercel.app)** · no account, no signup
+
+<p>
+  <img src="https://img.shields.io/badge/version-3.3.0-FF5A1F" alt="Version 3.3.0"/>
+  <img src="https://img.shields.io/badge/tests-107_passing-22C55E" alt="107 tests passing"/>
   <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white" alt="Next.js 16"/>
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19"/>
   <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" alt="TypeScript"/>
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS"/>
-  <img src="https://img.shields.io/badge/Storage-Local--First-22C55E?logo=lock&logoColor=white" alt="Local-First"/>
-  <img src="https://img.shields.io/badge/PWA-Installable-8B5CF6" alt="PWA Ready"/>
   <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License"/>
-  <img src="https://komarev.com/ghpvc/?username=Waleee7-ThrowingTracker&label=Views&color=888888&style=flat" alt="Views"/>
 </p>
 
-<h2>Why This Exists</h2>
-<p>
-Throwing events generate structured, repetitive data — distances, attempt sequences, session RPE, landing zones, competition results. Every practice and every meet produces numbers that should compound into insight over a season. In practice, they don't.
-</p>
-<p>
+<table>
+<tr>
+<td width="34%" valign="top"><img src="docs/dashboard-mobile.png" alt="The dashboard on a phone: today's best mark of 56.00 m, the last session card and a Log Session button, this week's sessions, throws and average RPE." width="100%"></td>
+<td width="66%" valign="top"><img src="docs/progress-desktop.png" alt="The Progress tab on desktop: discus and shot put marks over three months on a line chart, with personal bests marked in green." width="100%"><br><br><img src="docs/weekly-recap-mobile.png" alt="The weekly recap overlay: best mark 56.00 m, a PR WEEK badge, 3 sessions, 52 throws, average RPE 6 and a coach line." width="49%"></td>
+</tr>
+</table>
+<sub>Screenshots of the live app using its built-in "Load sample data" button, so every mark shown is sample data. Captured with Playwright on 2026-11-16.</sub>
+
+## Why this exists
+
+Throwing events generate structured, repetitive data: distances, attempt sequences, session RPE, landing zones, competition results. Every practice and every meet produces numbers that should compound into insight over a season. In practice, they don't.
+
 Most throwers track marks in the Notes app, a spreadsheet they abandon after two weeks, or not at all. Coaches collect data on paper heat sheets that never get digitized. Competition day means scribbling six attempts in the margins. By the time anyone asks "how has your shot put progressed since October?", the answer is a guess.
-</p>
-<p>
-ThrowingTracker was built to solve these specific problems.
-</p>
 
-<h3>The Problems We Solve</h3>
-<ul>
-  <li><strong>Fragmented Training Data:</strong> All sessions, marks, RPE, notes, and media are consolidated into one interface. Every throw is searchable and organized chronologically by event type.</li>
-  <li><strong>No Progress Visibility:</strong> Line charts, bar charts, and RPE overlays reveal trends and plateaus that would otherwise remain hidden.</li>
-  <li><strong>Competition Day Is Manual:</strong> Meet Day Mode tracks six attempts, fouls, and live bests with a minimal, distraction-free interface and animated PB celebration alerts.</li>
-  <li><strong>Landing Zone Patterns Are Invisible:</strong> Canvas-based sector diagram plots multi-session scatter to reveal directional tendencies.</li>
-  <li><strong>Video Review Requires Expensive Software:</strong> Slow-motion playback, frame-stepping, and drawing annotations included — all stored locally in IndexedDB.</li>
-  <li><strong>Data Is Locked In or Lost:</strong> Export to JSON or CSV anytime. No accounts, no subscriptions, no cloud lock-in.</li>
-  <li><strong>Fully Local Architecture:</strong> Runs entirely in the browser. PWA-ready and offline-capable.</li>
-</ul>
+ThrowingTracker was built by a thrower to fix that.
 
-<h2>⚡ Quick Start (Step-by-Step)</h2>
+## Features
 
-<ol>
-  <li>
-    <strong>Clone the repository</strong><br/>
-    <pre>git clone https://github.com/Waleee7/ThrowingTracker.git</pre>
-  </li>
+| | |
+|---|---|
+| **Fast logging** | Pick an event and the implement weight, unit and RPE pre-fill from your last session of that event. Marks in metres or feet and inches. |
+| **Meet Day Mode** | Six attempts, mark or foul, live best, and an animated PR alert. |
+| **Progress** | Line, volume and RPE charts by event and time range, plus a PR timeline of every time your all-time best moved. |
+| **Landing zones** | A canvas sector map that plots where throws land across sessions. |
+| **Film Room** | Load your own video, scrub frame by frame at 0.25x to 1x, and draw on it: freehand, straight lines, and an angle tool. Video stays in IndexedDB on your device. |
+| **Technique library** | Per-event key focus, phase-by-phase cues and common fault → fix pairs for shot put (glide and rotational), discus, hammer, weight throw and javelin. |
+| **Coach** | A chat coach for training questions. When the server has an `ANTHROPIC_API_KEY`, a Next.js route streams answers from Claude using a prompt-cached throws-science brief; without a key it streams a local rule-based reply instead, so it never breaks. |
+| **Readiness, goals and meets** | A daily readiness score, goal marks per event with progress bars, and a countdown to your next meet. |
+| **Weekly recap and share cards** | A "Your Week" summary once a week, and 1080×1920 share images for PRs and recaps through the phone's share sheet. |
+| **Achievements** | 16 badges across milestone, streak, competition, volume and special categories. |
+| **Your data, your device** | Everything is stored in the browser (localStorage + IndexedDB). Export to JSON or CSV, and restore from a JSON backup. No accounts. |
+| **Installable** | A web app manifest with PNG and maskable icons, so it can be added to a phone's home screen. |
 
-  <li>
-    <strong>Navigate into the project directory</strong><br/>
-    <pre>cd ThrowingTracker</pre>
-  </li>
+Supported events: shot put, discus, hammer, weight throw and javelin, each with its own PRs, charts and landing patterns.
 
-  <li>
-    <strong>Install dependencies</strong><br/>
-    <pre>npm install</pre>
-  </li>
+## Tech stack
 
-  <li>
-    <strong>Start the development server</strong><br/>
-    <pre>npm run dev</pre>
-  </li>
+Next.js 16 (App Router) · React 19 · TypeScript (strict) · Tailwind CSS v4 · Recharts · HTML5 canvas and video · localStorage + IndexedDB · `@anthropic-ai/sdk` on one server route · Vitest · Vercel. Fonts (Anton, Inter, JetBrains Mono) are self-hosted through `next/font`.
 
-  <li>
-    <strong>Open the app in your browser</strong><br/>
-    Visit: <a href="http://localhost:3000">http://localhost:3000</a><br/>
-    Complete the short onboarding flow to set your name and events.
-  </li>
-</ol>
+## Architecture
 
-<p>
-Install on your phone: open in Safari or Chrome → tap "Add to Home Screen" → runs offline in full-screen mode.  
-Deploy: connect to Vercel or build with <code>npm run build</code> and deploy /out to any static host.
-</p>
+```mermaid
+flowchart LR
+  subgraph Browser["Browser (all athlete data lives here)"]
+    UI[App Router pages<br/>dashboard · log · coach · technique · progress · history · profile]
+    CTX[AppContext + hooks]
+    LIB[src/lib<br/>analytics · personal-bests · achievements · readiness · recap · goals · units · film]
+    LS[(localStorage<br/>profile, sessions, meets, goals)]
+    IDB[(IndexedDB<br/>video and images)]
+    UI --> CTX --> LIB
+    CTX <--> LS
+    UI <--> IDB
+  end
+  UI -- coach chat --> API["/api/coach (Node route)"]
+  API -- key set --> CLAUDE[Claude via Anthropic SDK, streamed]
+  API -- no key or error --> FALLBACK[local rule-based reply, streamed]
+```
 
-<h2>Features</h2>
-<table>
-<tr>
-  <td align="center"><strong>Dashboard</strong><br/>Stats grid, PB cards, streak counter, compact achievement badges.</td>
-  <td align="center"><strong>Session Logging</strong><br/>Event selection, individual throws, RPE, notes, media attachments.</td>
-  <td align="center"><strong>Meet Day Mode</strong><br/>Six attempts, mark/foul entry, live best, animated PB alerts.</td>
-  <td align="center"><strong>Progress Charts</strong><br/>Line charts, weekly volume bars, RPE overlays.</td>
-</tr>
-<tr>
-  <td align="center"><strong>Landing Zones</strong><br/>Canvas sector map with multi-session scatter analysis.</td>
-  <td align="center"><strong>Video Analysis</strong><br/>Slow-mo 0.25x–1x, frame stepping, annotation overlay.</td>
-  <td align="center"><strong>Personal Bests</strong><br/>Auto-calculated all-time & season PBs, animated alerts.</td>
-  <td align="center"><strong>Achievements</strong><br/>16 badges across milestone, streak, competition, volume, special.</td>
-</tr>
-<tr>
-  <td align="center"><strong>Data Export</strong><br/>JSON for backup, CSV for spreadsheets, JSON import merge/replace.</td>
-  <td align="center"><strong>Dark Mode</strong><br/>Full dark theme with proper contrast throughout.</td>
-  <td align="center"><strong>PWA</strong><br/>Offline-ready, installable on phone, optimized manifest & SVGs.</td>
-  <td align="center"><strong>Onboarding</strong><br/>3-step first-time flow — under 30 seconds to first session.</td>
-</tr>
-</table>
+The coach route is the only code that runs on a server, and the only place the API key lives. Everything else is client-side.
 
-<h2>🎯 Supported Events</h2>
-<p>Shot Put — Discus — Hammer — Weight Throw — Javelin</p>
-<p>Multi-event athletes can track all events with separate PBs, progress charts, landing patterns, and achievement recognition.</p>
+```
+src/app/          routes: /, /log, /coach, /technique, /progress, /history, /profile, /api/coach
+src/components/   28 components: AppShell, DashboardTab, LogTab, MeetDayMode, FilmRoom, CoachChat, ...
+src/context/      AppContext: profile, sessions, onboarding, navigation
+src/lib/          pure logic with tests next to it: analytics, personal-bests, achievements, recap, goals, ...
+```
 
-<h2>🏆 Achievement System</h2>
-<p>16 unlockable badges: Milestone, Streak, Competition, Volume, Special. Toast notifications appear on unlock. Examples:</p>
-<ul>
-  <li>Milestone: First Throw, 50 Sessions, Century Club</li>
-  <li>Streak: 7-Day, 14-Day, 30-Day Iron Streak</li>
-  <li>Competition: First Meet, Meet Warrior, PB in Competition</li>
-  <li>Volume: 500 Throws, 1K Club, 5K Throws</li>
-  <li>Special: Multi-Event Athlete, Full Season Tracker</li>
-</ul>
+## Run it locally
 
-<h2>🎨 Design (v3.0 — Broadcast Sports Editorial)</h2>
-<p>
-v3 rebuilds the visual system around a TV-broadcast athletics aesthetic: a dark-ink default register with a rationed electric-lime accent, Fraunces display headlines, JetBrains Mono data/eyebrows, and big tabular stat numbers. Personal bests read as the live signal (lime), every event has its own identity hue, and the dashboard, onboarding, and Season Wrapped are anchored by cinematic, baked-in imagery. A clean paper register is one tap away. The whole thing is token-driven (Tailwind v4 <code>@theme</code>), so light/dark stay in sync and the palette lives in one place.
-</p>
+```bash
+git clone https://github.com/Waleee7/ThrowingTracker.git
+cd ThrowingTracker
+npm install
+npm run dev        # http://localhost:3000
+```
 
-<h2>🛠️ Tech Stack</h2>
-<table>
-<tr>
-  <td align="center"><strong>Framework</strong><br/>Next.js 16 with App Router, serverless coach route, Vercel integration.</td>
-  <td align="center"><strong>Language</strong><br/>TypeScript strict mode, type safety across data & analytics.</td>
-  <td align="center"><strong>UI</strong><br/>React 19, component architecture, hooks for state management.</td>
-  <td align="center"><strong>Styling</strong><br/>Tailwind CSS v4 token system (Broadcast Sports Editorial), dark-first + paper registers.</td>
-</tr>
-<tr>
-  <td align="center"><strong>Charts</strong><br/>Recharts — line, bar, composed charts.</td>
-  <td align="center"><strong>Canvas</strong><br/>HTML5 sector map & video annotation overlay.</td>
-  <td align="center"><strong>Video</strong><br/>HTML5 Video API, slow-mo, frame stepping.</td>
-  <td align="center"><strong>Storage</strong><br/>localStorage + IndexedDB, fully offline-capable.</td>
-</tr>
-</table>
+Finish the short onboarding (name and events), or open the dashboard and press **Load sample data** to explore with six weeks of sample sessions.
 
-<h2>💾 Data Storage</h2>
-<ul>
-  <li><strong>throwingProfile</strong>: name, height, weight, events, notes (localStorage)</li>
-  <li><strong>throwingSessions</strong>: all session & competition logs (localStorage)</li>
-  <li><strong>throwingDarkMode</strong>: theme preference (localStorage)</li>
-  <li><strong>IndexedDB media-store</strong>: videos/images as binary data</li>
-</ul>
-<p>Export regularly. Clearing browser data will permanently delete all stored info.</p>
+The coach works without any setup in its local fallback mode. To use Claude, copy `.env.example` to `.env.local` and set `ANTHROPIC_API_KEY` (optionally `COACH_MODEL`).
 
-<h2>📂 Source Tree</h2>
-<pre>
-src/
-├── app/
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-├── components/
-│   ├── DashboardTab.tsx
-│   ├── LogTab.tsx
-│   ├── HistoryTab.tsx
-│   ├── ProfileTab.tsx
-│   ├── MeetDayMode.tsx
-│   ├── ProgressChart.tsx
-│   ├── SectorMap.tsx
-│   ├── ThrowScatter.tsx
-│   ├── VideoPlayer.tsx
-│   ├── AchievementBadges.tsx
-│   ├── AchievementToast.tsx
-│   ├── PRAlert.tsx
-│   ├── Onboarding.tsx
-│   ├── Icons.tsx
-│   ├── TabButton.tsx
-│   └── FloatingElements.tsx
-├── lib/
-│   ├── types.ts
-│   ├── constants.ts
-│   ├── storage.ts
-│   ├── analytics.ts
-│   ├── personal-bests.ts
-│   ├── achievements.ts
-│   ├── export.ts
-│   └── media-storage.ts
-└── hooks/
-    ├── useProfile.ts
-    └── useSessions.ts
-</pre>
+## Tests
 
-<h2>🤝 Contributing</h2>
-<p>
-Pull requests welcome! Contributions from throwers who code, developers working with athletes, or open-source enthusiasts are appreciated. Areas include cloud sync, additional events, accessibility, internationalization, and test coverage.
-</p>
+```bash
+npm test
+```
 
-<h2>📄 License</h2>
-<p>MIT — see LICENSE</p>
+Last run on 2026-11-16: **107 of 107 tests passed in 15 files** (Vitest), covering analytics and streaks, personal bests, achievements, athlete level, the coach helpers, dates, export and import, film records, goals, implements, markdown, recap, throws, units and Season Wrapped.
+
+## Data storage
+
+| Key | Holds |
+|---|---|
+| `throwingProfile` | name, body stats, events, unit preference, level |
+| `throwingSessions` | every training and competition session |
+| `throwingMeets`, `throwingGoalMarks` | upcoming meets and per-event goals |
+| `throwingFilmSessions` | Film Room records (the video itself is in IndexedDB) |
+| `throwingDarkMode`, `throwingRecap*`, `throwingLastExport`, `throwingSchemaVersion` | preferences and housekeeping |
+
+Clearing browser data deletes everything, so export regularly from Profile.
+
+## Status
+
+- **Live:** [throwing-tracker.vercel.app](https://throwing-tracker.vercel.app), v3.3.0. Vercel deploys `main` to production.
+- **Offline:** data is stored locally, but there is no service worker yet, so the app needs a connection to load.
+- See [CHANGELOG.md](CHANGELOG.md) for release history and [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for internals.
+
+## Roadmap
+
+- A service worker so the app opens and logs with no signal at the field.
+- Turn on the live coach in production (set `ANTHROPIC_API_KEY` in Vercel).
+- Technique library video clips (the `TechniquePhase.video` slot is already wired).
+- Optional cloud sync and a coach view for teams.
+
+## Credits
+
+- Built by [Akinwale Dare](https://github.com/Waleee7), a discus and hammer thrower at Life University.
+- [James Olusoga](https://github.com/DareDev256) contributed the v2.0 migration to Next.js, React and TypeScript ([#1](https://github.com/Waleee7/ThrowingTracker/pull/1)) and the v3.1 broadcast redesign with the Technique Library, fast logging and the glance card ([#2](https://github.com/Waleee7/ThrowingTracker/pull/2)).
+- Coach knowledge is summarized from published throws-coaching sources (for example Bondarchuk's transfer of training) and is not medical advice.
+
+## Contributing
+
+Pull requests are welcome, especially from throwers who code. Good areas: offline support, more events, accessibility, internationalization and tests.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
